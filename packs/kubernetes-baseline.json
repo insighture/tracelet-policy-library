@@ -1,0 +1,107 @@
+{
+  "id": "kubernetes-baseline",
+  "name": "Kubernetes Baseline",
+  "category": "kubernetes",
+  "description": "Guards against destructive kubectl and Helm operations: namespace deletion, prod-context changes, node disruption, and secret removal. Blocks the most dangerous operations outright; escalates others to require written justification or admin access.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block kubectl delete on prod-named resources",
+      "description": "Blocks any kubectl delete targeting resources whose name contains prod, production, or prd. Prevents accidental removal of production workloads.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\s+delete\\s+.*-(prod|production|prd)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block kubectl delete namespace",
+      "description": "Prevents deletion of entire namespaces, which irreversibly removes all resources within them.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\s+delete\\s+(ns|namespace)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block kubectl delete secret",
+      "description": "Prevents deletion of Kubernetes secrets, which could break running workloads that depend on them.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\s+delete\\s+secret\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request to operate on prod cluster context",
+      "description": "Any kubectl command that targets a prod-named context must be approved by an admin. Prevents accidental cross-context operations against production.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\b.*--context[= ]\\S*prod"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request for Helm uninstall or delete",
+      "description": "helm uninstall and helm delete remove deployed releases and their associated resources. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["helm\\s+(uninstall|delete)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for kubectl drain or cordon",
+      "description": "Draining or cordoning nodes evicts running pods and prevents new scheduling. Requires a written reason before proceeding.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\s+(drain|cordon)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for kubectl exec into a pod",
+      "description": "Executing a shell in a running pod allows arbitrary code execution inside the cluster. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["kubectl\\s+exec\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    }
+  ]
+}

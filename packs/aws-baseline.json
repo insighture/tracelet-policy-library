@@ -1,0 +1,110 @@
+{
+  "id": "aws-baseline",
+  "name": "AWS Baseline",
+  "category": "aws",
+  "description": "Protects critical AWS infrastructure: prevents S3 bucket deletion, IAM destructive changes, KMS key scheduling, CloudTrail tampering, and unilateral compute/database termination. Blocks audit-trail tampering and data-loss operations outright; escalates resource termination to require admin approval.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block disabling or deleting CloudTrail",
+      "description": "Stopping or deleting CloudTrail trails eliminates the audit log, which is a key indicator of compromise or insider threat. This must never be allowed.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\s+cloudtrail\\s+(stop-logging|delete-trail)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block S3 bucket removal and recursive delete",
+      "description": "aws s3 rb removes entire S3 buckets; aws s3 rm --recursive deletes all objects under a prefix. Both operations cause irreversible data loss.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\s+s3\\s+rb\\b",
+          "aws\\s+s3\\s+rm\\b.*--recursive"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block KMS key deletion scheduling",
+      "description": "Scheduling a KMS key for deletion permanently destroys encryption keys, making encrypted data irrecoverable.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\s+kms\\s+schedule-key-deletion\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block IAM destructive operations",
+      "description": "Deleting IAM users, roles, policies, or groups can break service permissions and lock out legitimate users.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\s+iam\\s+delete\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request to delete RDS instances",
+      "description": "Deleting an RDS instance causes data loss unless a final snapshot is taken. Requires admin approval before proceeding.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\s+rds\\s+delete-db-instance\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request to terminate EC2 instances",
+      "description": "EC2 termination permanently destroys instance storage. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\s+ec2\\s+terminate-instances\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification when operating with a prod AWS profile",
+      "description": "Any AWS CLI command using a prod-named profile operates against production infrastructure. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["aws\\b.*--profile\\s+\\S*prod"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    }
+  ]
+}

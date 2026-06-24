@@ -1,0 +1,96 @@
+{
+  "id": "terraform-baseline",
+  "name": "Terraform Baseline",
+  "category": "terraform",
+  "description": "Guards infrastructure-as-code operations: blocks unreviewed apply and destroy, prevents state file corruption, warns on tfstate reads that may expose secrets, and gates all applies behind admin access. Enforces the principle that no AI agent should unilaterally change production infrastructure.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block terraform destroy",
+      "description": "terraform destroy tears down all managed infrastructure. This is always blocked regardless of environment — an intentional destroy must be performed by a human.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+destroy\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block terraform apply with -auto-approve",
+      "description": "terraform apply -auto-approve skips the interactive plan review step, removing the last human checkpoint before infrastructure changes.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+apply\\b.*-auto-approve\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block terraform state rm and state push",
+      "description": "terraform state rm and state push can corrupt or delete state, making Terraform unable to track resources and causing unrecoverable drift.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+state\\s+(rm|push)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request for terraform apply",
+      "description": "Any terraform apply (without -auto-approve) changes live infrastructure. Requires admin approval before the apply is allowed to proceed.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+apply\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for terraform import",
+      "description": "terraform import adds externally-managed resources to Terraform state. If the resource config is incorrect, it can cause subsequent apply operations to make unwanted changes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+import\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Warn on reading Terraform state files",
+      "description": "*.tfstate and *.tfstate.backup files contain the full state of managed infrastructure, including resource IDs and often plaintext secrets. Logs a warning when these files are accessed.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 400,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/*.tfstate",
+          "**/*.tfstate.backup"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

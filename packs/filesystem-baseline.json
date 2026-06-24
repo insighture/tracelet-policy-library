@@ -1,0 +1,134 @@
+{
+  "id": "filesystem-baseline",
+  "name": "Filesystem Baseline",
+  "category": "filesystem",
+  "description": "Protects the host filesystem from the most dangerous operations: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files. Also scopes AI file-write access to the project directory and /tmp, requiring justification for writes elsewhere.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block rm -rf on root or home",
+      "description": "rm -rf / and rm -rf ~ recursively delete the root or home directory. These are among the most destructive commands possible on a Unix system.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_commands": [
+          "rm -rf /",
+          "rm -rf /*",
+          "rm -rf ~",
+          "rm -rf ~/",
+          "rm -r /"
+        ],
+        "blocked_patterns": [
+          "rm\\s+-rf\\s+/(\\s|$)",
+          "rm\\s+-rf\\s+~"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block piping remote scripts to shell",
+      "description": "curl URL | bash and wget URL | sh are a primary vector for supply-chain attacks and remote code execution. This pattern must never be used by an AI agent.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\b.*\\|\\s*(ba)?sh\\b",
+          "wget\\b.*\\|\\s*(ba)?sh\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block overwriting block devices with dd",
+      "description": "dd if=... of=/dev/... writes directly to a block device (disk, partition, etc.), which can corrupt or wipe storage devices.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["dd\\b.*of=/dev/"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block reading sensitive system and credential files",
+      "description": "Prevents AI tools from reading /etc/shadow, /etc/passwd, SSH private keys, .aws/credentials, and .env files, which contain credentials that must not be exposed to AI context.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "/etc/shadow",
+          "/etc/passwd",
+          "/etc/master.passwd",
+          "**/.ssh/id_*",
+          "**/.ssh/authorized_keys",
+          "**/.aws/credentials",
+          "**/.env",
+          "**/.env.*"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for writing outside the project directory",
+      "description": "Write and Edit operations should be scoped to the current project directory or /tmp. Writes to any other path require a written justification explaining why the file needs to be created or modified outside the project.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "file_access",
+      "rule_config": {
+        "allowed_paths": [
+          "$PROJECT_DIR/**",
+          "/tmp/**",
+          "~/.config/**",
+          "~/.local/**"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Write", "Edit"]
+    },
+    {
+      "name": "Warn on chmod 777",
+      "description": "chmod 777 grants world-read/write/execute permissions, which is a security misconfiguration in almost every context. Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["chmod\\s+777\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Warn on sudo usage",
+      "description": "sudo elevates privileges and can have broad system impact. Logs a warning when an AI agent uses sudo so the action can be reviewed.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 410,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["(^|\\s)sudo\\s"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    }
+  ]
+}

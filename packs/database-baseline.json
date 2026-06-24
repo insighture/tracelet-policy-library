@@ -1,0 +1,93 @@
+{
+  "id": "database-baseline",
+  "name": "Database Baseline",
+  "category": "database",
+  "description": "Prevents irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access. Blocks DDL destruction outright; escalates DML-without-WHERE and prod connections to require justification or admin access.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block DROP DATABASE, TABLE, or SCHEMA",
+      "description": "DROP DATABASE, DROP TABLE, and DROP SCHEMA permanently destroy data structures and their contents. This matches across psql, mysql, sqlite, and direct CLI usage.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["drop\\s+(database|table|schema)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Block GRANT ALL privileges",
+      "description": "GRANT ALL on a table or database gives full access to a user or role, which can enable privilege escalation or unintended data exposure.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["grant\\s+all\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Block DROP USER",
+      "description": "Dropping a database user removes their access and may break service accounts or applications that depend on that user.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["drop\\s+user\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to connect to a prod database",
+      "description": "Connecting directly to a prod-named database (via psql, mysql, or mongo) allows live data manipulation. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["(psql|mysql|mongosh?)\\b.*prod"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for TRUNCATE TABLE",
+      "description": "TRUNCATE removes all rows from a table instantly, with no WHERE clause and limited rollback options in many engines. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["truncate\\s+(table\\s+)?\\w+"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for DELETE FROM statements",
+      "description": "Any DELETE FROM statement requires a written justification. This catches both targeted deletes (with WHERE) and full-table deletes (without WHERE), ensuring intent is documented.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["delete\\s+from\\s+"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

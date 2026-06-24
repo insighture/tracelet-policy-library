@@ -1,0 +1,110 @@
+{
+  "id": "git-baseline",
+  "name": "Git Baseline",
+  "category": "git",
+  "description": "Protects protected branches from force-pushes and unreviewed direct pushes. Prevents accidental hard resets, dangerous untracked-file removal, and credential exposure in commits. Uses a tiered approach: outright block for force-push to main/master, require admin approval for normal pushes to protected branches, and require justification for other destructive git operations.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block force-push to main or master",
+      "description": "Force-pushing to main or master rewrites shared history and can permanently destroy commits. This is always blocked. Catches both flag orderings: git push -f origin main and git push origin main --force.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\s+push\\b.*(--force|-f)\\b.*\\b(main|master)\\b",
+          "git\\s+push\\b.*\\b(main|master)\\b.*(--force|-f)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block detecting secrets in staged or committed content",
+      "description": "Scans pre-tool-use events (commit, add, diff) for API keys, tokens, and other credentials using the built-in gitleaks ruleset. Prevents accidental credential commits.",
+      "action": "block",
+      "fail_mode": "open",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "secret_detection",
+      "rule_config": {
+        "use_builtins": true
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to push to protected branches",
+      "description": "Direct pushes to main, master, production, or release branches bypass the pull-request review process. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["git\\s+push\\b.*\\b(main|master|production|release)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for force-push to any branch",
+      "description": "Force-pushing to any branch rewrites history for other contributors. Requires a written reason. (Force-push to main/master is blocked outright by a higher-priority rule.)",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["git\\s+push\\b.*(--force|-f)\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for deleting remote branches",
+      "description": "git push --delete removes a remote branch, which may be in use by other contributors or CI pipelines.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["git\\s+push\\b.*--delete\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for git clean -f",
+      "description": "git clean -f permanently deletes untracked files with no recovery path. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["git\\s+clean\\b.*-[a-z]*f"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Warn on git reset --hard",
+      "description": "git reset --hard discards uncommitted changes. Logs a warning so developers are aware; does not block.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["git\\s+reset\\s+--hard\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    }
+  ]
+}

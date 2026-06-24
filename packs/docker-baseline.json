@@ -1,0 +1,96 @@
+{
+  "id": "docker-baseline",
+  "name": "Docker Baseline",
+  "category": "docker",
+  "description": "Prevents high-risk Docker operations: privileged container runs, host filesystem mounts, system pruning, and unapproved image pushes. Blocks operations that can escape container isolation or cause irreversible data loss.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Block mounting host root filesystem",
+      "description": "docker run -v /: mounts the host root into the container, granting full read/write access to the host OS. This is a critical security boundary violation.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["docker\\s+run\\b.*-v\\s+/[: ]"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block privileged container runs",
+      "description": "The --privileged flag disables all container isolation. Privileged containers can access host devices and modify kernel parameters.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["docker\\s+run\\b.*--privileged"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Block docker system prune -a",
+      "description": "docker system prune -a and docker volume prune remove all unused images, containers, networks, and volumes. This causes irreversible data loss.",
+      "action": "block",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\s+(system\\s+)?prune\\b.*-a",
+          "docker\\s+volume\\s+prune\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require access request to push images to a registry",
+      "description": "Pushing images to a container registry publishes potentially sensitive code or credentials. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["docker\\s+push\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for force-removing containers",
+      "description": "docker rm -f forcibly stops and removes running containers, potentially losing in-memory state or unsaved data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["docker\\s+rm\\b.*-f\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Require justification for docker exec",
+      "description": "Executing commands directly inside a running container allows arbitrary code execution in the container's environment.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["docker\\s+exec\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    }
+  ]
+}
