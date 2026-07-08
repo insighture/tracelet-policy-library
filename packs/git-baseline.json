@@ -2,13 +2,13 @@
   "id": "git-baseline",
   "name": "Git Baseline",
   "category": "git",
-  "description": "Protects protected branches from force-pushes and unreviewed direct pushes. Prevents accidental hard resets, dangerous untracked-file removal, and credential exposure in commits. Uses a tiered approach: outright block for force-push to main/master, require admin approval for normal pushes to protected branches, and require justification for other destructive git operations.",
-  "version": "1.0.0",
+  "description": "Guards protected branches from force-pushes and unreviewed direct pushes. Guards against accidental hard resets, dangerous untracked-file removal, and credential exposure in commits. Uses a tiered approach: require admin approval for force-push to main/master, secret detection, and pushes to protected branches; require justification for other destructive git operations.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block force-push to main or master",
-      "description": "Force-pushing to main or master rewrites shared history and can permanently destroy commits. This is always blocked. Catches both flag orderings: git push -f origin main and git push origin main --force.",
-      "action": "block",
+      "name": "Require access request for force-push to main or master",
+      "description": "Force-pushing to main or master rewrites shared history and can permanently destroy commits. Requires admin approval before proceeding. Catches both flag orderings: git push -f origin main and git push origin main --force.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 100,
@@ -23,9 +23,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block detecting secrets in staged or committed content",
-      "description": "Scans pre-tool-use events (commit, add, diff) for API keys, tokens, and other credentials using the built-in gitleaks ruleset. Prevents accidental credential commits.",
-      "action": "block",
+      "name": "Require access request when secrets are detected in staged or committed content",
+      "description": "Scans pre-tool-use events (commit, add, diff) for API keys, tokens, and other credentials using the built-in gitleaks ruleset. Requires admin approval before proceeding, guarding against accidental credential commits.",
+      "action": "request_access",
       "fail_mode": "open",
       "severity": "high",
       "priority": 110,
@@ -52,7 +52,7 @@
     },
     {
       "name": "Require justification for force-push to any branch",
-      "description": "Force-pushing to any branch rewrites history for other contributors. Requires a written reason. (Force-push to main/master is blocked outright by a higher-priority rule.)",
+      "description": "Force-pushing to any branch rewrites history for other contributors. Requires a written reason. (Force-push to main/master requires admin approval via a higher-priority rule.)",
       "action": "justify",
       "fail_mode": "closed",
       "severity": "medium",

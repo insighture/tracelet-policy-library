@@ -2,13 +2,13 @@
   "id": "kubernetes-baseline",
   "name": "Kubernetes Baseline",
   "category": "kubernetes",
-  "description": "Guards against destructive kubectl and Helm operations: namespace deletion, prod-context changes, node disruption, and secret removal. Blocks the most dangerous operations outright; escalates others to require written justification or admin access.",
-  "version": "1.0.0",
+  "description": "Guards against destructive kubectl and Helm operations: namespace deletion, prod-context changes, node disruption, and secret removal. Requires admin approval via access request for the most dangerous operations; escalates others to require written justification.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block kubectl delete on prod-named resources",
-      "description": "Blocks any kubectl delete targeting resources whose name contains prod, production, or prd. Prevents accidental removal of production workloads.",
-      "action": "block",
+      "name": "Require access request for kubectl delete on prod-named resources",
+      "description": "Requires admin approval for any kubectl delete targeting resources whose name contains prod, production, or prd. Guards against accidental removal of production workloads.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 100,
@@ -20,9 +20,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block kubectl delete namespace",
-      "description": "Prevents deletion of entire namespaces, which irreversibly removes all resources within them.",
-      "action": "block",
+      "name": "Require access request for kubectl delete namespace",
+      "description": "Deleting a namespace irreversibly removes all resources within it. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 110,
@@ -34,9 +34,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block kubectl delete secret",
-      "description": "Prevents deletion of Kubernetes secrets, which could break running workloads that depend on them.",
-      "action": "block",
+      "name": "Require access request for kubectl delete secret",
+      "description": "Deleting a Kubernetes secret could break running workloads that depend on it. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 120,

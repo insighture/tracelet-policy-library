@@ -6,63 +6,63 @@
       "name": "Kubernetes Baseline",
       "category": "kubernetes",
       "description": "Guards against destructive kubectl and Helm operations: namespace deletion, prod-context changes, node disruption, and secret removal.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "rule_count": 7
     },
     {
       "id": "docker-baseline",
       "name": "Docker Baseline",
       "category": "docker",
-      "description": "Prevents high-risk Docker operations: privileged container runs, host filesystem mounts, system pruning, and unapproved image pushes.",
-      "version": "1.0.0",
+      "description": "Guards high-risk Docker operations: privileged container runs, host filesystem mounts, system pruning, and image pushes.",
+      "version": "1.1.0",
       "rule_count": 6
     },
     {
       "id": "aws-baseline",
       "name": "AWS Baseline",
       "category": "aws",
-      "description": "Protects critical AWS infrastructure: prevents S3 bucket deletion, IAM destructive changes, KMS key scheduling, CloudTrail tampering, and unilateral compute/database termination.",
-      "version": "1.0.0",
+      "description": "Protects critical AWS infrastructure: guards S3 bucket deletion, IAM destructive changes, KMS key scheduling, CloudTrail tampering, and compute/database termination.",
+      "version": "1.1.0",
       "rule_count": 7
     },
     {
       "id": "git-baseline",
       "name": "Git Baseline",
       "category": "git",
-      "description": "Protects protected branches from force-pushes and unreviewed direct pushes. Prevents accidental hard resets, dangerous untracked-file removal, and credential exposure in commits.",
-      "version": "1.0.0",
+      "description": "Guards protected branches from force-pushes and unreviewed direct pushes. Guards against accidental hard resets, dangerous untracked-file removal, and credential exposure in commits.",
+      "version": "1.1.0",
       "rule_count": 7
     },
     {
       "id": "secrets-baseline",
       "name": "Secrets Baseline",
       "category": "secrets",
-      "description": "Comprehensive secret and credential hygiene: blocks secrets from entering prompts and tool calls, redacts secrets in tool output, and prevents reading well-known credential files.",
-      "version": "1.0.0",
+      "description": "Comprehensive secret and credential hygiene: requires admin approval for secrets entering prompts and tool calls, redacts secrets in tool output, and requires admin approval before reading well-known credential files.",
+      "version": "1.1.0",
       "rule_count": 6
     },
     {
       "id": "database-baseline",
       "name": "Database Baseline",
       "category": "database",
-      "description": "Prevents irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access.",
-      "version": "1.0.0",
+      "description": "Guards irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access.",
+      "version": "1.1.0",
       "rule_count": 6
     },
     {
       "id": "terraform-baseline",
       "name": "Terraform Baseline",
       "category": "terraform",
-      "description": "Guards infrastructure-as-code operations: blocks unreviewed apply and destroy, prevents state file corruption, and gates all applies behind admin access.",
-      "version": "1.0.0",
+      "description": "Guards infrastructure-as-code operations: gates apply, destroy, and state operations behind admin access request.",
+      "version": "1.1.0",
       "rule_count": 6
     },
     {
       "id": "filesystem-baseline",
       "name": "Filesystem Baseline",
       "category": "filesystem",
-      "description": "Protects the host filesystem: blocks recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files.",
-      "version": "1.0.0",
+      "description": "Guards the host filesystem: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files require admin approval.",
+      "version": "1.1.0",
       "rule_count": 7
     }
   ]

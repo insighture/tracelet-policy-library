@@ -2,13 +2,13 @@
   "id": "terraform-baseline",
   "name": "Terraform Baseline",
   "category": "terraform",
-  "description": "Guards infrastructure-as-code operations: blocks unreviewed apply and destroy, prevents state file corruption, warns on tfstate reads that may expose secrets, and gates all applies behind admin access. Enforces the principle that no AI agent should unilaterally change production infrastructure.",
-  "version": "1.0.0",
+  "description": "Guards infrastructure-as-code operations: gates apply, destroy, and state operations behind admin access request, warns on tfstate reads that may expose secrets. Enforces the principle that no AI agent should unilaterally change production infrastructure.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block terraform destroy",
-      "description": "terraform destroy tears down all managed infrastructure. This is always blocked regardless of environment — an intentional destroy must be performed by a human.",
-      "action": "block",
+      "name": "Require access request for terraform destroy",
+      "description": "terraform destroy tears down all managed infrastructure. Requires admin approval regardless of environment — an intentional destroy must be authorized by a human.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 100,
@@ -20,9 +20,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block terraform apply with -auto-approve",
-      "description": "terraform apply -auto-approve skips the interactive plan review step, removing the last human checkpoint before infrastructure changes.",
-      "action": "block",
+      "name": "Require access request for terraform apply with -auto-approve",
+      "description": "terraform apply -auto-approve skips the interactive plan review step, removing the last human checkpoint before infrastructure changes. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 110,
@@ -34,9 +34,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block terraform state rm and state push",
-      "description": "terraform state rm and state push can corrupt or delete state, making Terraform unable to track resources and causing unrecoverable drift.",
-      "action": "block",
+      "name": "Require access request for terraform state rm and state push",
+      "description": "terraform state rm and state push can corrupt or delete state, making Terraform unable to track resources and causing unrecoverable drift. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 120,
