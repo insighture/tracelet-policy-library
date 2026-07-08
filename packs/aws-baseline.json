@@ -2,13 +2,13 @@
   "id": "aws-baseline",
   "name": "AWS Baseline",
   "category": "aws",
-  "description": "Protects critical AWS infrastructure: prevents S3 bucket deletion, IAM destructive changes, KMS key scheduling, CloudTrail tampering, and unilateral compute/database termination. Blocks audit-trail tampering and data-loss operations outright; escalates resource termination to require admin approval.",
-  "version": "1.0.0",
+  "description": "Protects critical AWS infrastructure: guards S3 bucket deletion, IAM destructive changes, KMS key scheduling, CloudTrail tampering, and compute/database termination. Requires admin approval via access request before any of these operations proceed.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block disabling or deleting CloudTrail",
-      "description": "Stopping or deleting CloudTrail trails eliminates the audit log, which is a key indicator of compromise or insider threat. This must never be allowed.",
-      "action": "block",
+      "name": "Require access request to disable or delete CloudTrail",
+      "description": "Stopping or deleting CloudTrail trails eliminates the audit log, which is a key indicator of compromise or insider threat. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 100,
@@ -20,9 +20,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block S3 bucket removal and recursive delete",
-      "description": "aws s3 rb removes entire S3 buckets; aws s3 rm --recursive deletes all objects under a prefix. Both operations cause irreversible data loss.",
-      "action": "block",
+      "name": "Require access request for S3 bucket removal and recursive delete",
+      "description": "aws s3 rb removes entire S3 buckets; aws s3 rm --recursive deletes all objects under a prefix. Both operations cause irreversible data loss. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 110,
@@ -37,9 +37,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block KMS key deletion scheduling",
-      "description": "Scheduling a KMS key for deletion permanently destroys encryption keys, making encrypted data irrecoverable.",
-      "action": "block",
+      "name": "Require access request to schedule KMS key deletion",
+      "description": "Scheduling a KMS key for deletion permanently destroys encryption keys, making encrypted data irrecoverable. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 120,
@@ -51,9 +51,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block IAM destructive operations",
-      "description": "Deleting IAM users, roles, policies, or groups can break service permissions and lock out legitimate users.",
-      "action": "block",
+      "name": "Require access request for IAM destructive operations",
+      "description": "Deleting IAM users, roles, policies, or groups can break service permissions and lock out legitimate users. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 130,

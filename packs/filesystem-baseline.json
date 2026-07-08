@@ -2,13 +2,13 @@
   "id": "filesystem-baseline",
   "name": "Filesystem Baseline",
   "category": "filesystem",
-  "description": "Protects the host filesystem from the most dangerous operations: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files. Also scopes AI file-write access to the project directory and /tmp, requiring justification for writes elsewhere.",
-  "version": "1.0.0",
+  "description": "Guards the host filesystem from the most dangerous operations: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files. Requires admin approval via access request for these; also scopes AI file-write access to the project directory and /tmp, requiring justification for writes elsewhere.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block rm -rf on root or home",
-      "description": "rm -rf / and rm -rf ~ recursively delete the root or home directory. These are among the most destructive commands possible on a Unix system.",
-      "action": "block",
+      "name": "Require access request for rm -rf on root or home",
+      "description": "rm -rf / and rm -rf ~ recursively delete the root or home directory. These are among the most destructive commands possible on a Unix system. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 100,
@@ -30,9 +30,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block piping remote scripts to shell",
-      "description": "curl URL | bash and wget URL | sh are a primary vector for supply-chain attacks and remote code execution. This pattern must never be used by an AI agent.",
-      "action": "block",
+      "name": "Require access request for piping remote scripts to shell",
+      "description": "curl URL | bash and wget URL | sh are a primary vector for supply-chain attacks and remote code execution. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 110,
@@ -47,9 +47,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block overwriting block devices with dd",
-      "description": "dd if=... of=/dev/... writes directly to a block device (disk, partition, etc.), which can corrupt or wipe storage devices.",
-      "action": "block",
+      "name": "Require access request to overwrite block devices with dd",
+      "description": "dd if=... of=/dev/... writes directly to a block device (disk, partition, etc.), which can corrupt or wipe storage devices. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 120,
@@ -61,9 +61,9 @@
       "tools": ["Bash"]
     },
     {
-      "name": "Block reading sensitive system and credential files",
-      "description": "Prevents AI tools from reading /etc/shadow, /etc/passwd, SSH private keys, .aws/credentials, and .env files, which contain credentials that must not be exposed to AI context.",
-      "action": "block",
+      "name": "Require access request to read sensitive system and credential files",
+      "description": "Reading /etc/shadow, /etc/passwd, SSH private keys, .aws/credentials, and .env files exposes credentials to AI context. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 200,

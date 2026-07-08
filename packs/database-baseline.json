@@ -2,13 +2,13 @@
   "id": "database-baseline",
   "name": "Database Baseline",
   "category": "database",
-  "description": "Prevents irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access. Blocks DDL destruction outright; escalates DML-without-WHERE and prod connections to require justification or admin access.",
-  "version": "1.0.0",
+  "description": "Guards irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access. Requires admin approval via access request for DDL destruction and prod connections; requires justification for DML-without-WHERE.",
+  "version": "1.1.0",
   "rules": [
     {
-      "name": "Block DROP DATABASE, TABLE, or SCHEMA",
-      "description": "DROP DATABASE, DROP TABLE, and DROP SCHEMA permanently destroy data structures and their contents. This matches across psql, mysql, sqlite, and direct CLI usage.",
-      "action": "block",
+      "name": "Require access request for DROP DATABASE, TABLE, or SCHEMA",
+      "description": "DROP DATABASE, DROP TABLE, and DROP SCHEMA permanently destroy data structures and their contents. This matches across psql, mysql, sqlite, and direct CLI usage. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "critical",
       "priority": 100,
@@ -20,9 +20,9 @@
       "tools": null
     },
     {
-      "name": "Block GRANT ALL privileges",
-      "description": "GRANT ALL on a table or database gives full access to a user or role, which can enable privilege escalation or unintended data exposure.",
-      "action": "block",
+      "name": "Require access request for GRANT ALL privileges",
+      "description": "GRANT ALL on a table or database gives full access to a user or role, which can enable privilege escalation or unintended data exposure. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 110,
@@ -34,9 +34,9 @@
       "tools": null
     },
     {
-      "name": "Block DROP USER",
-      "description": "Dropping a database user removes their access and may break service accounts or applications that depend on that user.",
-      "action": "block",
+      "name": "Require access request for DROP USER",
+      "description": "Dropping a database user removes their access and may break service accounts or applications that depend on that user. Requires admin approval before proceeding.",
+      "action": "request_access",
       "fail_mode": "closed",
       "severity": "high",
       "priority": 120,
