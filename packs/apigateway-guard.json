@@ -1,0 +1,869 @@
+{
+  "id": "apigateway-guard",
+  "name": "API Gateway Guard",
+  "category": "apigateway",
+  "description": "Protects API gateways: API/stage/route deletion, consumer and plugin removal, and proxy undeployment across AWS API Gateway, Kong, and Apigee. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for apigateway delete rest api",
+      "description": "aws apigateway delete-rest-api permanently removes a REST API and all its resources.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-rest-api\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for apigatewayv2 delete api",
+      "description": "aws apigatewayv2 delete-api permanently removes an HTTP API.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-api\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for deck reset",
+      "description": "deck reset removes ALL Kong configuration. This is extremely dangerous and irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "deck(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:gateway\\s+)?reset\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gcloud apigee environments delete",
+      "description": "gcloud apigee environments delete removes an Apigee environment.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+environments\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gcloud apigee organizations delete",
+      "description": "gcloud apigee organizations delete removes an entire Apigee organization.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+organizations\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for apigeecli envs delete",
+      "description": "apigeecli envs delete removes an Apigee environment.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+envs\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for apigeecli orgs delete",
+      "description": "apigeecli orgs delete removes an entire Apigee organization.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+orgs\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete resource",
+      "description": "aws apigateway delete-resource removes an API resource and its methods.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-resource\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete stage",
+      "description": "aws apigateway delete-stage removes a deployment stage from an API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-stage\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete api key",
+      "description": "aws apigateway delete-api-key removes an API key.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-api-key\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete authorizer",
+      "description": "aws apigateway delete-authorizer removes an authorizer from an API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-authorizer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete domain name",
+      "description": "aws apigateway delete-domain-name removes a custom domain name.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-domain-name\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigateway delete usage plan",
+      "description": "aws apigateway delete-usage-plan removes a usage plan.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-usage-plan\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigatewayv2 delete route",
+      "description": "aws apigatewayv2 delete-route removes a route from an HTTP API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-route\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigatewayv2 delete integration",
+      "description": "aws apigatewayv2 delete-integration removes an integration from an HTTP API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-integration\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigatewayv2 delete stage",
+      "description": "aws apigatewayv2 delete-stage removes a stage from an HTTP API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-stage\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigatewayv2 delete authorizer",
+      "description": "aws apigatewayv2 delete-authorizer removes an authorizer from an HTTP API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-authorizer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on apigateway delete method",
+      "description": "aws apigateway delete-method removes an HTTP method from a resource.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-method\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigatewayv2 delete domain name",
+      "description": "aws apigatewayv2 delete-domain-name removes a custom domain name from an HTTP API.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-domain-name\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on apigateway delete deployment",
+      "description": "aws apigateway delete-deployment removes a deployment from an API.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-deployment\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for deck sync destructive",
+      "description": "deck sync with --select-tag can remove entities not matching the tag.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "deck(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:gateway\\s+)?sync\\b.*--select-tag\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on apigateway delete model",
+      "description": "aws apigateway delete-model removes a model from an API.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigateway\\s+delete-model\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete services",
+      "description": "DELETE request to Kong Admin API removes services.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/services|(?:localhost|127\\.0\\.0\\.1):8001/services.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on apigatewayv2 delete route response",
+      "description": "aws apigatewayv2 delete-route-response removes a route response from an HTTP API.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-route-response\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete routes",
+      "description": "DELETE request to Kong Admin API removes routes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/routes|(?:localhost|127\\.0\\.0\\.1):8001/routes.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on apigatewayv2 delete integration response",
+      "description": "aws apigatewayv2 delete-integration-response removes an integration response.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apigatewayv2\\s+delete-integration-response\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete consumers",
+      "description": "DELETE request to Kong Admin API removes consumers.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/consumers|(?:localhost|127\\.0\\.0\\.1):8001/consumers.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on kong admin delete plugins",
+      "description": "DELETE request to Kong Admin API removes plugins.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/plugins|(?:localhost|127\\.0\\.0\\.1):8001/plugins.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete upstreams",
+      "description": "DELETE request to Kong Admin API removes upstreams.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/upstreams|(?:localhost|127\\.0\\.0\\.1):8001/upstreams.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on kong admin delete targets",
+      "description": "DELETE request to Kong Admin API removes targets.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/.*targets|(?:localhost|127\\.0\\.0\\.1):8001/.*targets.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete certificates",
+      "description": "DELETE request to Kong Admin API removes certificates.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/certificates|(?:localhost|127\\.0\\.0\\.1):8001/certificates.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kong admin delete snis",
+      "description": "DELETE request to Kong Admin API removes SNIs.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/snis|(?:localhost|127\\.0\\.0\\.1):8001/snis.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on kong admin delete generic",
+      "description": "DELETE request to Kong Admin API can remove configuration.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/|(?:localhost|127\\.0\\.0\\.1):8001/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gcloud apigee apis delete",
+      "description": "gcloud apigee apis delete removes an API proxy from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+apis\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on gcloud apigee deployments undeploy",
+      "description": "gcloud apigee deployments undeploy removes an API deployment.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+deployments\\s+undeploy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gcloud apigee developers delete",
+      "description": "gcloud apigee developers delete removes a developer from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+developers\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gcloud apigee products delete",
+      "description": "gcloud apigee products delete removes an API product from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bapigee\\s+products\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli apis delete",
+      "description": "apigeecli apis delete removes an API proxy from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 410,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apis\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli products delete",
+      "description": "apigeecli products delete removes an API product from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 420,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+products\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli developers delete",
+      "description": "apigeecli developers delete removes a developer from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 430,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+developers\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli apps delete",
+      "description": "apigeecli apps delete removes a developer app from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 440,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apps\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli keyvaluemaps delete",
+      "description": "apigeecli keyvaluemaps delete removes a key-value map from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 450,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+keyvaluemaps\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apigeecli targetservers delete",
+      "description": "apigeecli targetservers delete removes a target server from Apigee.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 460,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "apigeecli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+targetservers\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

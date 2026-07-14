@@ -1,0 +1,429 @@
+{
+  "id": "azure-guard",
+  "name": "Azure Guard",
+  "category": "azure",
+  "description": "Protects Microsoft Azure: resource-group and VM deletion, storage account removal, AKS teardown, key vault purges, and destructive az CLI operations. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for vm delete",
+      "description": "az vm delete permanently destroys virtual machines.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bvm\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for storage delete",
+      "description": "az storage account delete permanently destroys the storage account and all data.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bstorage\\s+account\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sql delete",
+      "description": "az sql server/db delete permanently destroys the database.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bsql\\s+(?:server|db)\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for group delete",
+      "description": "az group delete removes the entire resource group and ALL resources within it!",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bgroup\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for aks delete",
+      "description": "az aks delete removes the entire AKS cluster.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\baks\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for cosmosdb delete",
+      "description": "az cosmosdb delete permanently destroys the Cosmos DB resource.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bcosmosdb\\s+(?:delete|database\\s+delete|collection\\s+delete)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for keyvault delete",
+      "description": "az keyvault delete removes the Key Vault. Secrets may be unrecoverable.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bkeyvault\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for acr delete",
+      "description": "az acr delete removes the container registry and all images.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bacr\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for keyvault item delete or purge",
+      "description": "Key Vault item delete/purge (az keyvault <key|secret|certificate|storage> …) — purge bypasses soft-delete and is irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bkeyvault\\s+(?:key|secret|certificate|storage)\\s+(?:delete|purge)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for ad sp delete",
+      "description": "az ad sp delete removes a service principal — workloads using it lose auth.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 190,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bad\\s+sp\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for blob delete",
+      "description": "az storage blob/container delete permanently removes data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bstorage\\s+(?:blob|container)\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for ad app delete",
+      "description": "az ad app delete removes an Azure AD app registration — every service principal for it stops working.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bad\\s+app\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for webapp delete",
+      "description": "az webapp delete removes the App Service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bwebapp\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for network dns zone delete",
+      "description": "az network dns zone delete removes an Azure DNS zone — domains stop resolving.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bnetwork\\s+dns\\s+zone\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for functionapp delete",
+      "description": "az functionapp delete removes the Azure Function App.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bfunctionapp\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for cosmosdb sql container delete",
+      "description": "az cosmosdb <api> <db|container|keyspace> delete permanently destroys Cosmos DB data.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bcosmosdb\\s+(?:sql|mongodb|cassandra|gremlin|table)\\s+(?:database|container|keyspace|graph)\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for vnet delete",
+      "description": "az network vnet delete removes the virtual network.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bnetwork\\s+vnet\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for acr repository delete",
+      "description": "az acr repository delete permanently deletes the repository and its images.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bacr\\s+repository\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for role assignment delete",
+      "description": "az role assignment delete removes an RBAC binding — users/SPs lose permissions.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\brole\\s+assignment\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for monitor log profiles delete",
+      "description": "az monitor log-profiles delete removes a subscription activity-log export — compliance/forensics.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bmonitor\\s+log-profiles\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on acr repository untag",
+      "description": "az acr repository untag removes tags from images.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "az\\b.*?\\bacr\\s+repository\\s+untag"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

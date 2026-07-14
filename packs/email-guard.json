@@ -1,0 +1,669 @@
+{
+  "id": "email-guard",
+  "name": "Email Providers Guard",
+  "category": "email",
+  "description": "Protects transactional email providers: identity/domain deletion, template removal, suppression-list changes, and API-key deletion across SES, SendGrid, Mailgun, and Postmark. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for ses delete receipt rule set",
+      "description": "aws ses delete-receipt-rule-set removes a receipt rule set.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+ses\\s+delete-receipt-rule-set\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sesv2 delete dedicated ip pool",
+      "description": "aws sesv2 delete-dedicated-ip-pool removes a dedicated IP pool.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sesv2\\s+delete-dedicated-ip-pool\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sendgrid delete api key",
+      "description": "DELETE to SendGrid /v3/api_keys removes an API key.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/api_keys/|sendgrid\\.com/v3/api_keys/\\S+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sendgrid delete whitelabel domain",
+      "description": "DELETE to SendGrid /v3/whitelabel/domains removes domain authentication.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/whitelabel/domains/|sendgrid\\.com/v3/whitelabel/domains/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sendgrid delete subuser",
+      "description": "DELETE to SendGrid /v3/subusers removes a subuser account.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/subusers/|sendgrid\\.com/v3/subusers/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for mailgun delete domain",
+      "description": "DELETE to Mailgun /v3/domains removes a domain configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$)|api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$).*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for postmark delete server",
+      "description": "DELETE to Postmark /servers removes a server configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/servers/|api\\.postmarkapp\\.com/servers/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for postmark delete domain",
+      "description": "DELETE to Postmark /domains removes a domain configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/domains/|api\\.postmarkapp\\.com/domains/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ses delete identity",
+      "description": "aws ses delete-identity removes a verified email identity.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+ses\\s+delete-identity\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ses delete configuration set",
+      "description": "aws ses delete-configuration-set removes a configuration set.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+ses\\s+delete-configuration-set\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ses delete receipt rule",
+      "description": "aws ses delete-receipt-rule removes a receipt rule.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+ses\\s+delete-receipt-rule(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sesv2 delete email identity",
+      "description": "aws sesv2 delete-email-identity removes a verified email identity.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sesv2\\s+delete-email-identity\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sesv2 delete configuration set",
+      "description": "aws sesv2 delete-configuration-set removes a configuration set.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sesv2\\s+delete-configuration-set\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sesv2 delete contact list",
+      "description": "aws sesv2 delete-contact-list removes a contact list.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sesv2\\s+delete-contact-list\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sendgrid delete template",
+      "description": "DELETE to SendGrid /v3/templates removes a transactional template.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/templates/|sendgrid\\.com/v3/templates/\\S+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sendgrid delete sender",
+      "description": "DELETE to SendGrid /v3/senders or /v3/verified_senders removes a sender identity.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/(?:senders|verified_senders)/|sendgrid\\.com/v3/(?:senders|verified_senders)/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sendgrid delete suppression",
+      "description": "DELETE to SendGrid suppression endpoints removes entries from suppression lists.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/(?:suppression|asm)/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mailgun delete route",
+      "description": "DELETE to Mailgun /v3/routes removes an email route.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/routes/|api\\.mailgun\\.net/v3/routes/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on ses delete template",
+      "description": "aws ses delete-template removes an email template.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+ses\\s+delete-template\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mailgun delete list",
+      "description": "DELETE to Mailgun /v3/lists removes a mailing list.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/lists/|api\\.mailgun\\.net/v3/lists/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on sesv2 delete email template",
+      "description": "aws sesv2 delete-email-template removes an email template.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sesv2\\s+delete-email-template\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mailgun delete credential",
+      "description": "DELETE to Mailgun credentials endpoint removes SMTP credentials.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^/]+/credentials/|api\\.mailgun\\.net/v3/domains/[^/]+/credentials/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on sendgrid delete teammate",
+      "description": "DELETE to SendGrid /v3/teammates removes a teammate from the account.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/teammates/|sendgrid\\.com/v3/teammates/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mailgun delete suppression",
+      "description": "DELETE to Mailgun suppression endpoints removes suppression entries.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/(?:bounces|complaints|unsubscribes)/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on sendgrid delete webhook",
+      "description": "DELETE to SendGrid /v3/user/webhooks removes a webhook configuration.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/user/webhooks/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for postmark delete sender signature",
+      "description": "DELETE to Postmark /senders removes a sender signature.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/senders/|api\\.postmarkapp\\.com/senders/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on mailgun delete template",
+      "description": "DELETE to Mailgun templates endpoint removes an email template.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/templates/|api\\.mailgun\\.net/v3/[^/]+/templates/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for postmark delete suppression",
+      "description": "DELETE to Postmark suppressions endpoint removes suppression entries.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/|api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on mailgun delete webhook",
+      "description": "DELETE to Mailgun webhooks endpoint removes a webhook.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/|api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for postmark delete message stream",
+      "description": "DELETE to Postmark /message-streams removes a message stream.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$)|api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$).*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on postmark delete template",
+      "description": "DELETE to Postmark /templates removes an email template.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/templates/|api\\.postmarkapp\\.com/templates/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on postmark delete webhook",
+      "description": "DELETE to Postmark /webhooks removes a webhook configuration.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/webhooks/|api\\.postmarkapp\\.com/webhooks/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Log mailgun delete tag",
+      "description": "DELETE to Mailgun tags endpoint removes a tag.",
+      "action": "log",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/tags/|api\\.mailgun\\.net/v3/[^/]+/tags/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

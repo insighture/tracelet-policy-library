@@ -1,0 +1,309 @@
+{
+  "id": "system-services-guard",
+  "name": "System Services Guard",
+  "category": "system",
+  "description": "Protects host system state: recursive chmod/chown on system paths, disabling or masking system services, and destructive systemctl operations. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for chmod recursive root",
+      "description": "chmod -R on system directories can break system permissions.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chmod\\s+(?:.*(?:-[rR]|--recursive)).*\\s+['\"]?/(?:$|bin|boot|dev|etc|lib|lib64|opt|proc|root|run|sbin|srv|sys|usr|var)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for setfacl all",
+      "description": "setfacl -R on system directories can modify access control across the filesystem.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "setfacl\\s+.*-[rR].*\\s+['\"]?/(?:$|bin|boot|dev|etc|lib|lib64|opt|proc|root|run|sbin|srv|sys|usr|var)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for systemctl power",
+      "description": "systemctl poweroff/reboot/halt will shut down or restart the system.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+(?:poweroff|reboot|halt|suspend|hibernate)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for shutdown",
+      "description": "shutdown will power off or restart the system.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bshutdown\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for reboot",
+      "description": "reboot will restart the system.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\breboot\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for init level",
+      "description": "init 0 shuts down, init 6 reboots the system.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\binit\\s+[06]\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for chmod 777",
+      "description": "chmod 777 makes files world-writable. This is a security risk. Safer alternative: `chmod 755 {path}` — Owner can write; others can read/execute (safer default).",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chmod\\s+(?:.*\\s+)?[\"'=]?0*777(?:[\\s\"']|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for chown recursive root",
+      "description": "chown -R on system directories can break system ownership. Safer alternative: `chown {user} {path}` — Change ownership of a single path first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chown\\s+(?:.*(?:-[rR]|--recursive)).*\\s+['\"]?/(?:$|bin|boot|dev|etc|lib|lib64|opt|proc|root|run|sbin|srv|sys|usr|var)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for chmod setuid",
+      "description": "Setting setuid bit (chmod u+s) is a security-sensitive operation.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chmod\\s+.*u\\+s|chmod\\s+[4-7]\\d{3}"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for chmod setgid",
+      "description": "Setting setgid bit (chmod g+s) is a security-sensitive operation.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chmod\\s+.*g\\+s|chmod\\s+[2367]\\d{3}"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for chown to root",
+      "description": "Changing ownership to root should be done carefully.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "chown\\s+.*root[:\\s]"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for systemctl stop critical",
+      "description": "Stopping/disabling critical services can cause system access loss or outage.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+(?:stop|disable|mask)\\s+(?:ssh|sshd|network|networking|firewalld|ufw|docker|containerd)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for systemctl stop",
+      "description": "systemctl stop/disable/mask affects service availability. Verify service name.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+(?:stop|disable|mask)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for service stop critical",
+      "description": "Stopping critical services can cause system access loss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "service\\s+(?:ssh|sshd|network|networking|docker)\\s+stop"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for systemctl isolate",
+      "description": "systemctl isolate changes the system state significantly.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+isolate\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

@@ -19,10 +19,13 @@ go run ./tools/validate-packs .
 go test ./tools/validate-packs/
 ```
 
-Wave 1 (the pack list in `generate.py`'s `WAVE1`) covers the categories the
-dashboard already knows: database, aws, kubernetes, docker, git, secrets,
-terraform, filesystem. Wave 2 (gcp, azure, cicd, messaging, …) additionally
-needs the category filter/icon maps in the dashboard extended.
+Wave 1 (`WAVE1` in `generate.py`) covers the categories the dashboard already
+knew: database, aws, kubernetes, docker, git, secrets, terraform, filesystem.
+Wave 2 (`WAVE2`) adds gcp, azure, cicd, messaging, search, backup, dns, cdn,
+monitoring, payment, platform, email, featureflags, loadbalancer, apigateway,
+infrastructure, packages, remote, and system — these categories must be
+listed in the dashboard's category filter/icon maps
+(`governance.policy.tool-policies.tsx`).
 
 ## Field mapping
 

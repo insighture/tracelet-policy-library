@@ -132,6 +132,39 @@ func TestGeneratedPackBehavior(t *testing.T) {
 		{"windows-guard", "vssadmin delete shadows /all", true},
 		{"windows-guard", "Get-ChildItem C:\\temp", false},
 
+		// --- Wave 2 ---
+		{"gcp-guard", "gcloud projects delete my-project", true},
+		{"gcp-guard", "gcloud compute instances list", false},
+		{"azure-guard", "az group delete -n prod-rg --yes", true},
+		{"azure-guard", "az vm list", false},
+
+		// gh-flagskip conversion
+		{"cicd-guard", "gh secret delete DEPLOY_KEY", true},
+		{"cicd-guard", "gh --repo owner/repo secret delete DEPLOY_KEY", true},
+		{"cicd-guard", "gh secret list", false},
+		{"github-guard", "gh repo delete owner/repo --yes", true},
+		{"github-guard", "gh repo view owner/repo", false},
+
+		// curl-AND conversion: both flag orders must match
+		{"search-guard", "curl -X DELETE http://elastic:9200/my-index", true},
+		{"search-guard", "curl http://elastic:9200/my-index -X DELETE", true},
+		{"search-guard", "curl -X GET http://elastic:9200/_cat/indices", false},
+		{"monitoring-guard", "curl -X DELETE https://api.datadoghq.com/api/v1/dashboard/abc", true},
+
+		// lookbehind conversion
+		{"deploy-platforms-guard", "railway down", true},
+		{"deploy-platforms-guard", "modal volume rm my-vol", true},
+		{"deploy-platforms-guard", "modal volume rm -r my-vol", true},
+		{"deploy-platforms-guard", "railway status", false},
+
+		// publish dry-run exemption moved to allowed_patterns
+		{"package-managers-guard", "npm publish", true},
+		{"package-managers-guard", "npm publish --dry-run", false},
+		{"iac-guard", "pulumi destroy --yes", true},
+		{"iac-guard", "ansible-playbook -i inventory.ini site.yml", true},
+		{"iac-guard", "ansible-playbook --check -i inventory.ini site.yml", false},
+		{"backup-guard", "restic forget --prune", true},
+
 		// compound-command bypass attempts: a harmless segment must not
 		// exempt a destructive one
 		{"kubernetes-extended", "kubectl delete deployment web --dry-run=client; kubectl delete deployment api", true},

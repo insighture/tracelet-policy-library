@@ -1,0 +1,384 @@
+{
+  "id": "package-managers-guard",
+  "name": "Package Managers Guard",
+  "category": "packages",
+  "description": "Protects package registries and local package state: npm/yarn/pnpm unpublish and dist-tag changes, pip/cargo/gem yanks, and destructive global operations. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require justification for npm publish",
+      "description": "npm publish releases a package publicly. Use --dry-run first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bnpm\\b.*?\\bpublish\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=true)?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for yarn publish",
+      "description": "yarn publish releases a package publicly. Verify package.json first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\byarn\\b.*?\\bpublish\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=true)?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pnpm publish",
+      "description": "pnpm publish releases a package publicly.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpnpm\\b.*?\\bpublish\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=true)?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for npm unpublish",
+      "description": "npm unpublish removes a published package. This can break dependent projects.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bnpm\\b.*?\\bunpublish(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pip uninstall",
+      "description": "pip uninstall removes installed packages. Verify dependencies before removing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpip(?:3)?\\b.*?\\buninstall(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pip url",
+      "description": "pip install from URL can install unvetted code. Verify the source first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpip\\b.*?\\binstall\\s+.*(?:https?://|git\\+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pip system",
+      "description": "pip install to system directories requires careful review.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpip\\b.*?\\binstall\\s+.*--(?:system|target\\s*/usr)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apt remove",
+      "description": "apt remove/purge removes packages. Verify no critical packages are affected.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bapt(?:-get)?\\b.*?\\b(?:remove|purge|autoremove)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for yum remove",
+      "description": "yum/dnf remove removes packages. Verify no critical packages are affected.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:yum|dnf)\\b.*?\\b(?:remove|erase|autoremove)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cargo publish",
+      "description": "cargo publish releases a crate to crates.io. Use --dry-run first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcargo\\b.*?\\bpublish\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=true)?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cargo yank",
+      "description": "cargo yank marks a version as unavailable. This can break dependent projects.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcargo\\b.*?\\byank(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gem push",
+      "description": "gem push releases a gem to rubygems.org. Verify before publishing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgem\\b.*?\\bpush\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for brew uninstall",
+      "description": "brew uninstall removes packages. Verify no dependent packages are affected.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bbrew\\b.*?\\b(?:uninstall|remove)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for poetry publish",
+      "description": "poetry publish releases a package. Use --dry-run first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpoetry\\b.*?\\bpublish\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=true)?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for poetry remove",
+      "description": "poetry remove uninstalls a dependency. Verify no critical packages are affected.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpoetry\\b.*?\\bremove(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for maven deploy",
+      "description": "mvn deploy publishes artifacts to a remote repository. Verify target repository.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:mvn|mvnw)\\b.*?\\bdeploy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for maven release perform",
+      "description": "mvn release:perform publishes a release. Verify version and repository.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:mvn|mvnw)\\s+.*release:perform\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gradle publish",
+      "description": "gradle publish uploads artifacts. Use --dry-run first when possible.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:gradle|gradlew)\\s+.*\\bpublish\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

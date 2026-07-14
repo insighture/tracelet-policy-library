@@ -152,6 +152,162 @@ WAVE1 = [
     },
 ]
 
+# ---------------------------------------------------------------------------
+# Wave 2 pack composition — new categories; the dashboard's category
+# filter/icon maps must list these (see isee dashboard
+# governance.policy.tool-policies.tsx).
+# ---------------------------------------------------------------------------
+
+WAVE2 = [
+    {
+        "id": "gcp-guard",
+        "name": "GCP Guard",
+        "category": "gcp",
+        "sources": ["cloud.gcp"],
+        "description": "Protects Google Cloud: project/instance deletion, GCS bucket removal, GKE cluster teardown, IAM policy changes, and destructive gcloud/gsutil operations. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "azure-guard",
+        "name": "Azure Guard",
+        "category": "azure",
+        "sources": ["cloud.azure"],
+        "description": "Protects Microsoft Azure: resource-group and VM deletion, storage account removal, AKS teardown, key vault purges, and destructive az CLI operations. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "cicd-guard",
+        "name": "CI/CD Guard",
+        "category": "cicd",
+        "sources": ["cicd.github_actions", "cicd.gitlab_ci", "cicd.jenkins", "cicd.circleci"],
+        "description": "Protects CI/CD systems: deleting workflows, runners, pipelines, jobs, caches, and secrets across GitHub Actions, GitLab CI, Jenkins, and CircleCI. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "messaging-guard",
+        "name": "Messaging Guard",
+        "category": "messaging",
+        "sources": ["messaging.kafka", "messaging.rabbitmq", "messaging.nats", "messaging.sqs_sns"],
+        "description": "Protects message brokers: topic/queue deletion, consumer-group resets, exchange removal, and stream purges across Kafka, RabbitMQ, NATS, and SQS/SNS. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "search-guard",
+        "name": "Search & Indexing Guard",
+        "category": "search",
+        "sources": ["search.elasticsearch", "search.opensearch", "search.algolia", "search.meilisearch"],
+        "description": "Protects search clusters: index deletion, delete-by-query, snapshot removal, and cluster-settings changes across Elasticsearch, OpenSearch, Algolia, and Meilisearch. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "backup-guard",
+        "name": "Backup Guard",
+        "category": "backup",
+        "sources": ["backup.restic", "backup.borg", "backup.rclone", "backup.velero"],
+        "description": "Protects backup systems — the last line of defence: snapshot forgetting/pruning, repository deletion, rclone purge/delete, and Velero backup removal. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "dns-guard",
+        "name": "DNS Guard",
+        "category": "dns",
+        "sources": ["dns.cloudflare", "dns.route53", "dns.generic"],
+        "description": "Protects DNS: zone and record deletion across Cloudflare, Route 53, and generic DNS tooling. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "cdn-guard",
+        "name": "CDN Guard",
+        "category": "cdn",
+        "sources": ["cdn.cloudflare_workers", "cdn.fastly", "cdn.cloudfront"],
+        "description": "Protects CDN and edge platforms: worker/service deletion, distribution removal, and cache purges across Cloudflare Workers, Fastly, and CloudFront. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "monitoring-guard",
+        "name": "Monitoring Guard",
+        "category": "monitoring",
+        "sources": ["monitoring.datadog", "monitoring.pagerduty", "monitoring.prometheus", "monitoring.newrelic", "monitoring.splunk"],
+        "description": "Protects observability systems: deleting dashboards, monitors, alert rules, escalation policies, and retention data across Datadog, PagerDuty, Prometheus, New Relic, and Splunk. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "payment-guard",
+        "name": "Payment Providers Guard",
+        "category": "payment",
+        "sources": ["payment.stripe", "payment.braintree", "payment.square"],
+        "description": "Protects payment providers: deleting customers, subscriptions, webhooks, and products, and issuing refunds across Stripe, Braintree, and Square. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "github-guard",
+        "name": "GitHub Platform Guard",
+        "category": "platform",
+        "sources": ["platform.github"],
+        "description": "Protects GitHub via the gh CLI and API: repository deletion, release removal, deploy-key and webhook changes, and secret deletion. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "gitlab-guard",
+        "name": "GitLab Platform Guard",
+        "category": "platform",
+        "sources": ["platform.gitlab"],
+        "description": "Protects GitLab via the glab CLI and API: project deletion, release removal, and runner deregistration. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "deploy-platforms-guard",
+        "name": "Deploy Platforms Guard",
+        "category": "platform",
+        "sources": ["platform.railway", "platform.kamal", "platform.modal"],
+        "description": "Protects deployment platforms: project/service/environment deletion, volume wipes, variable removal, and app teardown across Railway, Kamal, and Modal. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "email-guard",
+        "name": "Email Providers Guard",
+        "category": "email",
+        "sources": ["email.ses", "email.sendgrid", "email.mailgun", "email.postmark"],
+        "description": "Protects transactional email providers: identity/domain deletion, template removal, suppression-list changes, and API-key deletion across SES, SendGrid, Mailgun, and Postmark. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "featureflags-guard",
+        "name": "Feature Flags Guard",
+        "category": "featureflags",
+        "sources": ["featureflags.launchdarkly", "featureflags.split", "featureflags.flipt", "featureflags.unleash"],
+        "description": "Protects feature-flag platforms: flag/segment deletion, environment removal, and project teardown across LaunchDarkly, Split, Flipt, and Unleash. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "loadbalancer-guard",
+        "name": "Load Balancer Guard",
+        "category": "loadbalancer",
+        "sources": ["loadbalancer.nginx", "loadbalancer.elb", "loadbalancer.haproxy", "loadbalancer.traefik"],
+        "description": "Protects load balancers and reverse proxies: config deletion, listener/target-group removal, and destructive reloads across nginx, ELB/ALB, HAProxy, and Traefik. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "apigateway-guard",
+        "name": "API Gateway Guard",
+        "category": "apigateway",
+        "sources": ["apigateway.aws", "apigateway.kong", "apigateway.apigee"],
+        "description": "Protects API gateways: API/stage/route deletion, consumer and plugin removal, and proxy undeployment across AWS API Gateway, Kong, and Apigee. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "iac-guard",
+        "name": "IaC Tools Guard",
+        "category": "infrastructure",
+        "sources": ["infrastructure.pulumi", "infrastructure.ansible", "infrastructure.atmos"],
+        "description": "Protects infrastructure-as-code tools beyond Terraform: pulumi destroy and stack removal, destructive ansible runs, and atmos terraform wrappers. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "package-managers-guard",
+        "name": "Package Managers Guard",
+        "category": "packages",
+        "sources": ["package_managers"],
+        "description": "Protects package registries and local package state: npm/yarn/pnpm unpublish and dist-tag changes, pip/cargo/gem yanks, and destructive global operations. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "remote-access-guard",
+        "name": "Remote Access Guard",
+        "category": "remote",
+        "sources": ["remote.ssh", "remote.scp", "remote.rsync"],
+        "description": "Protects remote hosts: destructive commands over ssh, overwriting remote files via scp, and rsync --delete mirroring. Derived from the destructive_command_guard pattern library.",
+    },
+    {
+        "id": "system-services-guard",
+        "name": "System Services Guard",
+        "category": "system",
+        "sources": ["system.permissions", "system.services"],
+        "description": "Protects host system state: recursive chmod/chown on system paths, disabling or masking system services, and destructive systemctl operations. Derived from the destructive_command_guard pattern library.",
+    },
+]
+
 ACTION_BY_SEVERITY = {
     "critical": ("request_access", "closed", 100),
     "high": ("justify", "closed", 200),
@@ -263,6 +419,40 @@ REGEX_OVERRIDES: dict = {
     ("windows.misc", "robocopy-mirror"): {
         "regex": r"(?i)\brobocopy(?:\.exe)?\b[^|&\r\n]*\s(?:/mir|/purge)\b",
     },
+    # --- Wave 2 ---
+    # (?!.*--dry-run) exemptions on registry publishes move to allowed_patterns
+    ("package_managers", "npm-publish"): {
+        "regex": r"\bnpm\b.*?\bpublish\b",
+        "allow": [r"--dry-run(?:=true)?\b[^;&]*$"],
+    },
+    ("package_managers", "yarn-publish"): {
+        "regex": r"\byarn\b.*?\bpublish\b",
+        "allow": [r"--dry-run(?:=true)?\b[^;&]*$"],
+    },
+    ("package_managers", "pnpm-publish"): {
+        "regex": r"\bpnpm\b.*?\bpublish\b",
+        "allow": [r"--dry-run(?:=true)?\b[^;&]*$"],
+    },
+    ("package_managers", "cargo-publish"): {
+        "regex": r"\bcargo\b.*?\bpublish\b",
+        "allow": [r"--dry-run(?:=true)?\b[^;&]*$"],
+    },
+    ("package_managers", "poetry-publish"): {
+        "regex": r"\bpoetry\b.*?\bpublish\b",
+        "allow": [r"--dry-run(?:=true)?\b[^;&]*$"],
+    },
+    # (?!.*(--check|--limit)) exemption moves to allowed_patterns
+    ("infrastructure.ansible", "playbook-all-hosts"): {
+        "regex": r"ansible-playbook\s+.*-i\s+\S+\s+\S+\.ya?ml",
+        "allow": [r"ansible-playbook\b[^|;&]*(?:--check\b|--limit\b)[^;&]*$"],
+    },
+    # dcg splits volume rm into non-recursive (this) and recursive (separate
+    # rule) via a negative lookahead; the recursive form moves to an allow so
+    # only the dedicated recursive rule fires for it.
+    ("platform.modal", "modal-volume-rm"): {
+        "regex": r"(?:^|[^\w-])modal\b(?:\s+--?\S+(?:\s+\S+)?)*\s+volume\s+rm\b",
+        "allow": [r"modal\b[^|;&\r\n]*\bvolume\s+rm\b(?:[^;&|\r\n]|\\\r?\n)*(?:\s|=)(?:-r\b|-R\b|--recursive\b)[^;&]*$"],
+    },
 }
 
 # Patterns whose positive lookaheads are all pure boundary assertions
@@ -341,10 +531,75 @@ def rewrite_re2(pattern: str):
     """Return (rewritten, ok). Mechanical fixes for RE2 compatibility."""
     # named groups: (?<name>  ->  (?P<name>
     pattern = re.sub(r"\(\?<([A-Za-z_][A-Za-z0-9_]*)>", r"(?P<\1>", pattern)
+    # word-ish lookbehind used to reject `my-railway` style prefixes ->
+    # consuming equivalent (identical detection semantics for match-anywhere)
+    pattern = pattern.replace(r"(?<![\w-])", r"(?:^|[^\w-])")
     for guard, replacement in TRAVERSAL_GUARDS:
         pattern = re.sub(guard, replacement, pattern)
     pattern = convert_trailing_lookahead(pattern)
     return pattern, not LOOKAROUND.search(pattern)
+
+
+def scan_group(pattern: str, start: int):
+    """Return the index just past the group opening at `start`, or None."""
+    depth = 0
+    j = start
+    while j < len(pattern):
+        c = pattern[j]
+        if c in "()" and (j == 0 or pattern[j - 1] != "\\"):
+            depth += 1 if c == "(" else -1
+            if depth == 0:
+                return j + 1
+        j += 1
+    return None
+
+
+def convert_curl_and(pattern: str):
+    """Convert `PREFIX(?=.*A)(?=.*B)....*` (AND-of-contents lookaheads) into
+    an explicit ordering expansion `PREFIX(?:.*A.*B|.*B.*A|...)`.
+
+    Slightly narrower than the original when A and B could overlap in the
+    command text; for the method-flag + URL patterns this uses, they cannot.
+    """
+    idx = pattern.find("(?=")
+    if idx == -1:
+        return None
+    prefix = pattern[:idx]
+    if LOOKAROUND.search(prefix):
+        return None
+    parts = []
+    pos = idx
+    while pattern.startswith("(?=", pos):
+        end = scan_group(pattern, pos)
+        if end is None:
+            return None
+        content = pattern[pos + 3 : end - 1]
+        if not content.startswith(".*") or LOOKAROUND.search(content):
+            return None
+        parts.append(content[2:])
+        pos = end
+    if pattern[pos:] not in ("", ".*", ".*$") or not parts or len(parts) > 3:
+        return None
+    from itertools import permutations
+    alts = ["".join(".*" + p for p in perm) for perm in permutations(parts)]
+    return prefix + "(?:" + "|".join(alts) + ")"
+
+
+def convert_gh_flagskip(pattern: str):
+    """Replace dcg's gh-CLI flag-skipper construct — `gh(?:\\s+--?FLAG
+    (?:\\s+(?!KEYWORDS)VALUE)?)*` — with `\\bgh\\b[^|;&]*?`. The construct
+    exists to stop a flag's value from consuming the subcommand keyword; the
+    replacement just scans forward within the same shell segment.
+    """
+    if not pattern.startswith("gh(?:"):
+        return None
+    end = scan_group(pattern, 2)
+    if end is None or end >= len(pattern) or pattern[end] != "*":
+        return None
+    candidate = r"\bgh\b[^|;&]*?" + pattern[end + 1 :]
+    if LOOKAROUND.search(candidate):
+        return None
+    return candidate
 
 
 def humanize(name: str) -> str:
@@ -392,7 +647,7 @@ def main():
     dropped_safe = []  # safe patterns dropped for lookarounds
 
     generated = []
-    for spec in WAVE1:
+    for spec in WAVE1 + WAVE2:
         exclude = spec.get("exclude", {})
         sev_over = spec.get("severity_overrides", {})
 
@@ -440,6 +695,12 @@ def main():
                     pat["regex_re2"] = rx
                 else:
                     rx, ok = rewrite_re2(pat["regex"])
+                    if not ok:
+                        for conv in (convert_gh_flagskip, convert_curl_and):
+                            alt = conv(rx)
+                            if alt is not None:
+                                rx, ok = alt, True
+                                break
                     if not ok:
                         flagged.append((src, pat["name"], pat["regex"]))
                         continue
