@@ -1,0 +1,456 @@
+{
+  "id": "docker-extended",
+  "name": "Docker Extended",
+  "category": "docker",
+  "description": "Extended container protection beyond Docker Baseline: docker/podman prune and force-removal variants, volume and network deletion, and docker compose down -v. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for down volumes",
+      "description": "docker-compose down -v removes volumes and their data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:docker-compose|docker\\s+compose)\\s+down\\s+.*(?:-v\\b|--volumes)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for volume prune",
+      "description": "podman volume prune removes ALL unused volumes and their data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bvolume\\s+prune"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for system prune",
+      "description": "docker system prune removes ALL unused containers, networks, images. Use 'docker system df' to preview. Safer alternative: `docker system df -v` — Preview what would be removed without deleting anything.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bsystem\\s+prune"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for volume prune",
+      "description": "docker volume prune removes ALL unused volumes and their data permanently. Safer alternative: `docker volume ls -q -f dangling=true` — List unused volumes first to review what would be deleted.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bvolume\\s+prune"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for network prune",
+      "description": "docker network prune removes ALL unused networks. Safer alternative: `docker network ls` — List all networks to review before pruning.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bnetwork\\s+prune"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rm force",
+      "description": "docker rm -f forcibly removes containers, potentially losing data. Safer alternative: `docker stop {container} && docker rm {container}` — Graceful shutdown with SIGTERM before removal.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\brm\\s+.*(?:-[a-zA-Z0-9]*f|--force)"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rmi force",
+      "description": "docker rmi -f forcibly removes images even if in use. Safer alternative: `docker rmi {image}` — Remove without force - fails safely if image is in use.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\brmi\\s+.*(?:-[a-zA-Z0-9]*f|--force)"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for volume rm",
+      "description": "docker volume rm permanently deletes volumes and their data. Safer alternative: `docker volume inspect {volume}` — Inspect volume metadata and mount point before removal.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bvolume\\s+rm"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stop all",
+      "description": "Stopping/killing all containers can disrupt services. Be specific about which containers. Safer alternative: `docker stop {container-name}` — Stop specific containers by name.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\b(?:stop|kill)\\s+\\$\\("
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for down rmi all",
+      "description": "docker-compose down --rmi all removes all images used by services.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:docker-compose|docker\\s+compose)\\s+down\\s+.*--rmi\\s+all"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rm volumes",
+      "description": "docker-compose rm -v removes volumes attached to containers.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:docker-compose|docker\\s+compose)\\s+rm\\s+.*(?:-v\\b|--volumes)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for system prune (2)",
+      "description": "podman system prune removes ALL unused containers, pods, images. Use 'podman system df' to preview.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bsystem\\s+prune"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on image prune",
+      "description": "docker image prune removes unused images. Use 'docker images' to review first. Safer alternative: `docker images -f dangling=true` — List dangling images first to see what would be removed.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bimage\\s+prune"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rm force (2)",
+      "description": "podman rm -f forcibly removes containers, potentially losing data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\brm\\s+.*(?:-[a-zA-Z0-9]*f|--force)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on container prune",
+      "description": "docker container prune removes ALL stopped containers. Safer alternative: `docker ps -a -f status=exited` — List stopped containers first to review before removal.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\bcontainer\\s+prune"
+        ],
+        "allowed_patterns": [
+          "(?:^\\s*docker\\b(?:\\s+[^;&|`$()]*)*--dry-run(?:\\s+[^;&|`$()]*)*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rmi force (2)",
+      "description": "podman rmi -f forcibly removes images even if in use.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\brmi\\s+.*(?:-[a-zA-Z0-9]*f|--force)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on rm force",
+      "description": "docker-compose rm -f forcibly removes containers without confirmation.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:docker-compose|docker\\s+compose)\\s+rm\\s+.*(?:-f\\b|--force)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for volume rm (2)",
+      "description": "podman volume rm permanently deletes volumes and their data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bvolume\\s+rm"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on pod prune",
+      "description": "podman pod prune removes ALL stopped pods.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bpod\\s+prune"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on image prune (2)",
+      "description": "podman image prune removes unused images. Use 'podman images' to review first.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bimage\\s+prune"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on container prune (2)",
+      "description": "podman container prune removes ALL stopped containers.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "podman\\b.*?\\bcontainer\\s+prune"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

@@ -213,8 +213,18 @@ Rules within a policy group are evaluated in ascending priority order (lower num
 1. Create `packs/{id}.json` following the schema above.
 2. Add an entry to `index.json` with the correct `rule_count` matching the number of items in `rules`.
 3. Bump `version` in both files for any rule changes.
-4. Validate JSON: `python3 -m json.tool packs/{id}.json > /dev/null`.
-5. Verify all regex patterns are RE2-valid (no lookaheads, no backreferences).
+4. Validate: `go run ./tools/validate-packs .` — checks the schema, compiles
+   every regex under Go RE2 (no lookaheads, no backreferences), and
+   cross-checks `index.json`. Must print `OK`.
+5. Run the behavioral tests: `go test ./tools/validate-packs/`.
+
+## Derived packs (dcg import)
+
+The `*-guard` and `*-extended` packs are generated from the pattern library of
+[destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)
+by `tools/dcg-import/` (see its README for the pipeline and the field
+mapping). Do not hand-edit those pack files — change the generator config and
+regenerate, then bump the pack version.
 
 ---
 
