@@ -1,0 +1,169 @@
+{
+  "id": "terraform-extended",
+  "name": "Terraform Extended",
+  "category": "terraform",
+  "description": "Extended Terraform protection beyond Terraform Baseline: workspace deletion, force-unlock, taint, and destructive state manipulation. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for destroy",
+      "description": "terraform/tofu destroy removes ALL managed infrastructure. Use 'terraform plan -destroy' first.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bdestroy(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apply auto approve",
+      "description": "terraform/tofu apply -auto-approve skips confirmation. Remove -auto-approve for safety.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bapply\\s+.*-auto-approve"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for taint",
+      "description": "terraform/tofu taint marks a resource to be destroyed and recreated on next apply.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\btaint\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for state rm",
+      "description": "terraform/tofu state rm removes resource from state without destroying it. Resource becomes unmanaged.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bstate\\s+rm\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for state mv",
+      "description": "terraform/tofu state mv moves resources in state. Incorrect moves can cause resource recreation.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bstate\\s+mv\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for force unlock",
+      "description": "terraform/tofu force-unlock removes state lock. Only use if lock is stale.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bforce-unlock\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on plan destroy",
+      "description": "terraform/tofu plan -destroy shows what would be destroyed. Review carefully before applying.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bplan\\s+.*-destroy"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on workspace delete",
+      "description": "terraform/tofu workspace delete removes a workspace. Ensure it's not in use.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b.*?\\bworkspace\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

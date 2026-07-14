@@ -1,0 +1,609 @@
+{
+  "id": "loadbalancer-guard",
+  "name": "Load Balancer Guard",
+  "category": "loadbalancer",
+  "description": "Protects load balancers and reverse proxies: config deletion, listener/target-group removal, and destructive reloads across nginx, ELB/ALB, HAProxy, and Traefik. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for nginx config delete",
+      "description": "Removing files from /etc/nginx deletes nginx configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\brm\\b.*\\s+['\"]?/etc/nginx(?:/|\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for traefik docker stop",
+      "description": "Stopping the Traefik container halts all traffic routing.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\s+(?:stop|kill)\\s+.*\\btraefik\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for traefik docker rm",
+      "description": "Removing the Traefik container destroys the load balancer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker\\b.*?\\s+rm\\s+.*\\btraefik\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for traefik compose down",
+      "description": "docker-compose down on Traefik stops and removes the load balancer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "docker[\\s-]compose\\s+.*\\bdown\\b.*\\btraefik\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for traefik kubectl delete pod",
+      "description": "Deleting Traefik pods/deployments disrupts traffic routing.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\s+delete\\s+(?:pod|deployment|daemonset)\\s+.*\\btraefik\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for traefik config delete",
+      "description": "Removing Traefik config files disrupts load balancer configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\brm\\b.*\\btraefik\\b.*\\.(?:ya?ml|toml)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for nginx stop",
+      "description": "nginx -s stop shuts down nginx and stops the load balancer.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "nginx\\s+-s\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for nginx quit",
+      "description": "nginx -s quit gracefully stops nginx and halts traffic handling.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "nginx\\s+-s\\s+quit\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for systemctl stop nginx",
+      "description": "systemctl stop nginx stops the nginx service and disrupts traffic.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+stop\\s+nginx(?:\\.service)?\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for service stop nginx",
+      "description": "service nginx stop stops the nginx service and disrupts traffic.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "service\\s+nginx\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elbv2 delete load balancer",
+      "description": "aws elbv2 delete-load-balancer permanently deletes the load balancer.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elbv2\\s+delete-load-balancer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elbv2 delete target group",
+      "description": "aws elbv2 delete-target-group permanently deletes the target group.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elbv2\\s+delete-target-group\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elbv2 deregister targets",
+      "description": "aws elbv2 deregister-targets removes targets from the load balancer, impacting live traffic.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elbv2\\s+deregister-targets\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elbv2 delete listener",
+      "description": "aws elbv2 delete-listener deletes a listener, potentially breaking traffic routing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elbv2\\s+delete-listener\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elbv2 delete rule",
+      "description": "aws elbv2 delete-rule deletes a listener rule, potentially breaking routing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elbv2\\s+delete-rule\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elb delete load balancer",
+      "description": "aws elb delete-load-balancer permanently deletes the classic load balancer.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elb\\s+delete-load-balancer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for elb deregister instances",
+      "description": "aws elb deregister-instances-from-load-balancer removes instances from the load balancer, impacting live traffic.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:\\s+(?:--profile|--region|--output|--endpoint-url)\\s+\\S+|\\s+--\\S+)*\\s+elb\\s+deregister-instances-from-load-balancer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy soft stop",
+      "description": "haproxy -sf sends a soft stop signal, terminating the load balancer gracefully.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bhaproxy\\s+.*-sf\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy hard stop",
+      "description": "haproxy -st sends a hard stop signal, immediately terminating the load balancer.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bhaproxy\\s+.*-st\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy systemctl stop",
+      "description": "systemctl stop haproxy stops the HAProxy service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+stop\\s+haproxy(?:\\.service)?\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy service stop",
+      "description": "service haproxy stop stops the HAProxy service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "service\\s+haproxy\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy socat disable server",
+      "description": "Disabling a server via HAProxy runtime API removes it from the load balancer pool.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:echo|printf)\\s+['\"]?disable\\s+server\\b.*\\|\\s*socat\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy socat shutdown sessions",
+      "description": "Shutting down sessions via HAProxy runtime API terminates active connections.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:echo|printf)\\s+['\"]?shutdown\\s+sessions\\b.*\\|\\s*socat\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy socat disable frontend",
+      "description": "Disabling a frontend via HAProxy runtime API stops accepting new connections.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:echo|printf)\\s+['\"]?disable\\s+frontend\\b.*\\|\\s*socat\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy socat shutdown frontend",
+      "description": "Shutting down a frontend via HAProxy runtime API terminates it immediately.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:echo|printf)\\s+['\"]?shutdown\\s+frontend\\b.*\\|\\s*socat\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for haproxy config delete",
+      "description": "Removing files from /etc/haproxy deletes HAProxy configuration.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\brm\\b.*\\s+['\"]?/etc/haproxy(?:/|\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for traefik kubectl delete ingressroute",
+      "description": "Deleting IngressRoute CRDs removes Traefik routing rules.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\s+delete\\s+ingressroute\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for traefik api delete",
+      "description": "DELETE operations against Traefik API can remove routing configuration.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 410,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\btraefik\\b.*\\b/api/|.*\\btraefik\\b.*\\b/api/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for traefik systemctl stop",
+      "description": "systemctl stop traefik stops the Traefik service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 420,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "systemctl\\b.*?\\s+stop\\s+traefik(?:\\.service)?\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for traefik service stop",
+      "description": "service traefik stop stops the Traefik service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 430,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "service\\s+traefik\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

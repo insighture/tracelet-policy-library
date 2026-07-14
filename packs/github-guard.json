@@ -1,0 +1,329 @@
+{
+  "id": "github-guard",
+  "name": "GitHub Platform Guard",
+  "category": "platform",
+  "description": "Protects GitHub via the gh CLI and API: repository deletion, release removal, deploy-key and webhook changes, and secret deletion. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require justification for gh repo delete",
+      "description": "gh repo delete permanently deletes a GitHub repository. This cannot be undone.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+repo\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh repo archive",
+      "description": "gh repo archive makes a repository read-only. While reversible, it stops all write access.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+repo\\s+archive\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh gist delete",
+      "description": "gh gist delete permanently deletes a Gist.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+gist\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh release delete",
+      "description": "gh release delete permanently deletes a release.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+release\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh issue delete",
+      "description": "gh issue delete permanently deletes an issue.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+issue\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh ssh key delete",
+      "description": "gh ssh-key delete removes an SSH key, potentially breaking access.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+ssh-key\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh secret delete",
+      "description": "gh secret delete removes GitHub Actions secrets.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+secret\\s+(?:delete|remove)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh variable delete",
+      "description": "gh variable delete removes GitHub Actions variables.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+variable\\s+(?:delete|remove)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh repo deploy key delete",
+      "description": "gh repo deploy-key delete removes a deploy key and can break access.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+repo\\s+deploy-key\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh run cancel",
+      "description": "gh run cancel stops a workflow run and may interrupt deployments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+run\\s+cancel\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete actions secret",
+      "description": "gh api DELETE actions/secrets removes GitHub Actions secrets.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/secrets/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete actions variable",
+      "description": "gh api DELETE actions/variables removes GitHub Actions variables.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/variables/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete hook",
+      "description": "gh api DELETE hooks removes repository webhooks.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/hooks/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete deploy key",
+      "description": "gh api DELETE keys removes deploy keys.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/keys/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete release",
+      "description": "gh api DELETE releases removes GitHub releases.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/releases/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gh api delete repo",
+      "description": "gh api DELETE calls can be destructive. Please verify the endpoint.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

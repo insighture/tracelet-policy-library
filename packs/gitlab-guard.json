@@ -1,0 +1,229 @@
+{
+  "id": "gitlab-guard",
+  "name": "GitLab Platform Guard",
+  "category": "platform",
+  "description": "Protects GitLab via the glab CLI and API: project deletion, release removal, and runner deregistration. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require justification for glab repo delete",
+      "description": "glab repo delete permanently deletes a GitLab project.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+repo\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab repo archive",
+      "description": "glab repo archive makes a GitLab project read-only.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+repo\\s+archive\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab release delete",
+      "description": "glab release delete removes GitLab releases.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+release\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab variable delete",
+      "description": "glab variable delete removes GitLab CI/CD variables.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+variable\\s+(?:delete|remove)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab api delete project",
+      "description": "glab api DELETE /projects/* deletes a GitLab project.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab api delete release",
+      "description": "glab api DELETE releases removes GitLab releases.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+/releases/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab api delete variable",
+      "description": "glab api DELETE variables removes CI/CD variables.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+/variables/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab api delete protected branch",
+      "description": "glab api DELETE protected_branches removes branch protections.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?protected_branches/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for glab api delete hook",
+      "description": "glab api DELETE hooks removes GitLab webhooks.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?hooks/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gitlab rails runner destructive",
+      "description": "gitlab-rails runner destructive operations can remove data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gitlab-rails\\s+runner\\b.*\\b(?:destroy_all|delete_all|\\.destroy\\b|\\.delete\\b|truncate|drop)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gitlab rake destructive",
+      "description": "gitlab-rake destructive maintenance tasks can delete or replace data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gitlab-rake\\b.*\\b(?:gitlab:)?backup:restore\\b|gitlab-rake\\b.*\\b(?:gitlab:)?db:(?:drop|reset)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

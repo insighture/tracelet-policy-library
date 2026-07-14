@@ -1,0 +1,789 @@
+{
+  "id": "search-guard",
+  "name": "Search & Indexing Guard",
+  "category": "search",
+  "description": "Protects search clusters: index deletion, delete-by-query, snapshot removal, and cluster-settings changes across Elasticsearch, OpenSearch, Algolia, and Meilisearch. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for es curl delete index",
+      "description": "curl -X DELETE against an Elasticsearch index (or _all/*) deletes data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:[\\s?'\"]|$)|.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:[\\s?'\"]|$).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for es http delete index",
+      "description": "http DELETE against an Elasticsearch index (or _all/*) deletes data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:elastic|:9200)\\S*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:[\\s?]|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for os curl delete index",
+      "description": "curl -X DELETE against an OpenSearch index (or _all/*) deletes data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:\\b|[/?])|.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:\\b|[/?]).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for os http delete index",
+      "description": "http DELETE against an OpenSearch index (or _all/*) deletes data permanently.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:opensearch|:9200)\\S*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)(?:[\\s?]|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for aws opensearch delete domain",
+      "description": "aws opensearch delete-domain permanently deletes an OpenSearch domain.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+opensearch\\s+delete-domain\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for algolia indices delete",
+      "description": "algolia indices delete permanently removes an Algolia index.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "algolia(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+indices\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for algolia sdk delete index",
+      "description": "Algolia SDK deleteIndex removes an index.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:algolia|algoliasearch)\\b.*\\bdeleteIndex\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for meili curl delete index",
+      "description": "curl -X DELETE against /indexes/{uid} deletes a Meilisearch index.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+(?:[\\s?'\"]|$)|.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+(?:[\\s?'\"]|$).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for meili http delete index",
+      "description": "http DELETE against /indexes/{uid} deletes a Meilisearch index.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:meili|:7700)\\S*/indexes/\\S+(?:[\\s?]|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es curl delete by query",
+      "description": "curl -X POST to _delete_by_query deletes documents matching the query.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es curl close index",
+      "description": "curl -X POST to _close closes an index, making it unavailable for reads/writes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es curl cluster settings",
+      "description": "curl -X PUT to /_cluster/settings changes cluster settings and can be dangerous.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))PUT\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/_cluster/settings\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/_cluster/settings\\b.*(?:-X\\s*|--request(?:=|\\s+))PUT\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es http delete by query",
+      "description": "http POST to _delete_by_query deletes documents matching the query.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+POST\\s+(?:https?://)?\\S*(?:elastic|:9200)\\S*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es http close index",
+      "description": "http POST to _close closes an index, making it unavailable for reads/writes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+POST\\s+(?:https?://)?\\S*(?:elastic|:9200)\\S*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for es http cluster settings",
+      "description": "http PUT to /_cluster/settings changes cluster settings and can be dangerous.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+PUT\\s+(?:https?://)?\\S*(?:elastic|:9200)\\S*/_cluster/settings\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for os curl delete by query",
+      "description": "curl -X POST to _delete_by_query deletes documents matching the query.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for os curl close index",
+      "description": "curl -X POST to _close closes an index, making it unavailable for reads/writes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:opensearch|:9200)[^\\s'\\\"]*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for os http delete by query",
+      "description": "http POST to _delete_by_query deletes documents matching the query.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+POST\\s+(?:https?://)?\\S*(?:opensearch|:9200)\\S*/[a-z0-9][a-z0-9._-]*/_delete_by_query\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for os http close index",
+      "description": "http POST to _close closes an index, making it unavailable for reads/writes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+POST\\s+(?:https?://)?\\S*(?:opensearch|:9200)\\S*/(?:_all|\\*|[a-z0-9][a-z0-9._-]*)/_close\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on es curl delete doc",
+      "description": "curl -X DELETE against /_doc deletes a document from Elasticsearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+|.*\\b(?:https?://)?[^\\s'\\\"]*(?:elastic|:9200)[^\\s'\\\"]*/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for aws opensearch delete inbound connection",
+      "description": "aws opensearch delete-inbound-connection removes an OpenSearch connection.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+opensearch\\s+delete-inbound-connection\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on es http delete doc",
+      "description": "http DELETE against /_doc deletes a document from Elasticsearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:elastic|:9200)\\S*/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for aws opensearch delete outbound connection",
+      "description": "aws opensearch delete-outbound-connection removes an OpenSearch connection.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+opensearch\\s+delete-outbound-connection\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on os curl delete doc",
+      "description": "curl -X DELETE against /_doc deletes a document from OpenSearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*?(?:opensearch|:9200)[^\\s'\\\"]*?/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+|.*\\b(?:https?://)?[^\\s'\\\"]*?(?:opensearch|:9200)[^\\s'\\\"]*?/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for algolia indices clear",
+      "description": "algolia indices clear removes all objects from an Algolia index.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "algolia(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+indices\\s+clear\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on os http delete doc",
+      "description": "http DELETE against /_doc deletes a document from OpenSearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:opensearch|:9200)\\S*/[a-z0-9][a-z0-9._-]*/_doc/[^\\s/?]+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for algolia apikeys delete",
+      "description": "algolia apikeys delete removes API keys and can break integrations.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "algolia(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+apikeys\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on aws opensearch delete package",
+      "description": "aws opensearch delete-package removes an OpenSearch package.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+opensearch\\s+delete-package\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for algolia sdk clear objects",
+      "description": "Algolia SDK clearObjects removes all records from an index.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:algolia|algoliasearch)\\b.*\\bclearObjects\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on algolia rules delete",
+      "description": "algolia rules delete removes index rules.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "algolia(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+rules\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili curl delete documents",
+      "description": "curl -X DELETE against /documents removes documents from Meilisearch.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents(?:[\\s?'\"]|$)|.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents(?:[\\s?'\"]|$).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on algolia synonyms delete",
+      "description": "algolia synonyms delete removes synonym entries.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "algolia(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+synonyms\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili curl delete batch",
+      "description": "curl -X POST to /documents/delete-batch deletes documents in bulk.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents/delete-batch\\b|.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents/delete-batch\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on meili curl delete document",
+      "description": "curl -X DELETE against /documents/{id} removes a document from Meilisearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents/[^\\s/?]+|.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/indexes/[^\\s/?]+/documents/[^\\s/?]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili curl delete key",
+      "description": "curl -X DELETE against /keys removes a Meilisearch API key.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/keys/[^\\s/?]+|.*\\b(?:https?://)?[^\\s'\\\"]*(?:meili|:7700)[^\\s'\\\"]*/keys/[^\\s/?]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on meili http delete document",
+      "description": "http DELETE against /documents/{id} removes a document from Meilisearch.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:meili|:7700)\\S*/indexes/\\S+/documents/\\S+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili http delete documents",
+      "description": "http DELETE against /documents removes documents from Meilisearch.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:meili|:7700)\\S*/indexes/\\S+/documents(?:[\\s?]|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili http delete batch",
+      "description": "http POST to /documents/delete-batch deletes documents in bulk.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+POST\\s+(?:https?://)?\\S*(?:meili|:7700)\\S*/indexes/\\S+/documents/delete-batch\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for meili http delete key",
+      "description": "http DELETE against /keys removes a Meilisearch API key.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "http\\s+DELETE\\s+(?:https?://)?\\S*(?:meili|:7700)\\S*/keys/\\S+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

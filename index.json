@@ -64,6 +64,294 @@
       "description": "Guards the host filesystem: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files require admin approval.",
       "version": "1.1.0",
       "rule_count": 7
+    },
+    {
+      "id": "postgresql-guard",
+      "name": "PostgreSQL Guard",
+      "category": "database",
+      "description": "Deep PostgreSQL protection: DROP DATABASE/TABLE/SCHEMA, TRUNCATE, unqualified DELETE, dropdb, and destructive pg_dump --clean restores. Complements Database Baseline with engine-specific coverage. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 7
+    },
+    {
+      "id": "mysql-guard",
+      "name": "MySQL Guard",
+      "category": "database",
+      "description": "Deep MySQL/MariaDB protection: DROP and TRUNCATE statements, mysqladmin drop, destructive mysqldump flags, and unqualified DELETE/UPDATE. Complements Database Baseline with engine-specific coverage. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 10
+    },
+    {
+      "id": "mongodb-guard",
+      "name": "MongoDB Guard",
+      "category": "database",
+      "description": "MongoDB protection: dropDatabase, collection drops, deleteMany without filters, and destructive mongorestore --drop. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 5
+    },
+    {
+      "id": "redis-guard",
+      "name": "Redis Guard",
+      "category": "database",
+      "description": "Redis protection: FLUSHALL/FLUSHDB, CONFIG REWRITE, destructive key operations, and cluster reset commands. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 13
+    },
+    {
+      "id": "sqlite-guard",
+      "name": "SQLite Guard",
+      "category": "database",
+      "description": "SQLite protection: DROP/DELETE statements through the sqlite3 CLI and destructive database file operations. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 4
+    },
+    {
+      "id": "supabase-guard",
+      "name": "Supabase Guard",
+      "category": "database",
+      "description": "Supabase CLI protection: project deletion, database resets, branch deletion, secret removal, and destructive migration commands. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 18
+    },
+    {
+      "id": "aws-extended",
+      "name": "AWS Extended",
+      "category": "aws",
+      "description": "Extended AWS CLI protection beyond AWS Baseline: EC2/EBS/RDS deletion, S3 wipes, IAM and security-group changes, Lambda/ECS/EKS teardown, CloudFormation stack deletion, and more. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 41
+    },
+    {
+      "id": "kubernetes-extended",
+      "name": "Kubernetes Extended",
+      "category": "kubernetes",
+      "description": "Extended Kubernetes protection beyond Kubernetes Baseline: broad kubectl delete/drain variants, destructive patches and scale-to-zero, helm rollback edge cases, and kustomize-driven deletions. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 19
+    },
+    {
+      "id": "docker-extended",
+      "name": "Docker Extended",
+      "category": "docker",
+      "description": "Extended container protection beyond Docker Baseline: docker/podman prune and force-removal variants, volume and network deletion, and docker compose down -v. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 21
+    },
+    {
+      "id": "git-strict",
+      "name": "Git Strict",
+      "category": "git",
+      "description": "Strict git hygiene for teams that want maximum protection: discarding working-tree changes (checkout --/restore), stash deletion, branch force-deletion, history rewrites (rebase, amend, filter-branch), reflog expiry, and indiscriminate git add. Complements Git Baseline (force-push and protected-branch rules live there). Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 19
+    },
+    {
+      "id": "secrets-managers-guard",
+      "name": "Secrets Managers Guard",
+      "category": "secrets",
+      "description": "Protects secret-manager CLIs: HashiCorp Vault seal/revoke/delete, AWS Secrets Manager deletion, 1Password item/vault removal, and Doppler secret deletion. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 26
+    },
+    {
+      "id": "terraform-extended",
+      "name": "Terraform Extended",
+      "category": "terraform",
+      "description": "Extended Terraform protection beyond Terraform Baseline: workspace deletion, force-unlock, taint, and destructive state manipulation. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 8
+    },
+    {
+      "id": "filesystem-extended",
+      "name": "Filesystem Extended",
+      "category": "filesystem",
+      "description": "Extended filesystem protection beyond Filesystem Baseline: rm flag variants (-r -f, --recursive --force), find -delete, shred, truncate, tar --remove-files, dd file overwrites, unlink, and copy-then-delete exfiltration patterns on sensitive paths. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 23
+    },
+    {
+      "id": "disk-operations-guard",
+      "name": "Disk Operations Guard",
+      "category": "filesystem",
+      "description": "Guards low-level disk operations: mkfs, fdisk/parted/sgdisk partitioning, wipefs, LVM/RAID teardown, swap manipulation, and filesystem-destroying tools. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 39
+    },
+    {
+      "id": "windows-guard",
+      "name": "Windows Guard",
+      "category": "filesystem",
+      "description": "Windows-specific protection: del /s, rd /s, Remove-Item -Recurse -Force, format, diskpart, vssadmin delete shadows, registry deletion, and destructive PowerShell one-liners. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 30
+    },
+    {
+      "id": "gcp-guard",
+      "name": "GCP Guard",
+      "category": "gcp",
+      "description": "Protects Google Cloud: project/instance deletion, GCS bucket removal, GKE cluster teardown, IAM policy changes, and destructive gcloud/gsutil operations. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 23
+    },
+    {
+      "id": "azure-guard",
+      "name": "Azure Guard",
+      "category": "azure",
+      "description": "Protects Microsoft Azure: resource-group and VM deletion, storage account removal, AKS teardown, key vault purges, and destructive az CLI operations. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 21
+    },
+    {
+      "id": "cicd-guard",
+      "name": "CI/CD Guard",
+      "category": "cicd",
+      "description": "Protects CI/CD systems: deleting workflows, runners, pipelines, jobs, caches, and secrets across GitHub Actions, GitLab CI, Jenkins, and CircleCI. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 22
+    },
+    {
+      "id": "messaging-guard",
+      "name": "Messaging Guard",
+      "category": "messaging",
+      "description": "Protects message brokers: topic/queue deletion, consumer-group resets, exchange removal, and stream purges across Kafka, RabbitMQ, NATS, and SQS/SNS. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 28
+    },
+    {
+      "id": "search-guard",
+      "name": "Search & Indexing Guard",
+      "category": "search",
+      "description": "Protects search clusters: index deletion, delete-by-query, snapshot removal, and cluster-settings changes across Elasticsearch, OpenSearch, Algolia, and Meilisearch. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 39
+    },
+    {
+      "id": "backup-guard",
+      "name": "Backup Guard",
+      "category": "backup",
+      "description": "Protects backup systems — the last line of defence: snapshot forgetting/pruning, repository deletion, rclone purge/delete, and Velero backup removal. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 23
+    },
+    {
+      "id": "dns-guard",
+      "name": "DNS Guard",
+      "category": "dns",
+      "description": "Protects DNS: zone and record deletion across Cloudflare, Route 53, and generic DNS tooling. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 13
+    },
+    {
+      "id": "cdn-guard",
+      "name": "CDN Guard",
+      "category": "cdn",
+      "description": "Protects CDN and edge platforms: worker/service deletion, distribution removal, and cache purges across Cloudflare Workers, Fastly, and CloudFront. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 26
+    },
+    {
+      "id": "monitoring-guard",
+      "name": "Monitoring Guard",
+      "category": "monitoring",
+      "description": "Protects observability systems: deleting dashboards, monitors, alert rules, escalation policies, and retention data across Datadog, PagerDuty, Prometheus, New Relic, and Splunk. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 28
+    },
+    {
+      "id": "payment-guard",
+      "name": "Payment Providers Guard",
+      "category": "payment",
+      "description": "Protects payment providers: deleting customers, subscriptions, webhooks, and products, and issuing refunds across Stripe, Braintree, and Square. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 20
+    },
+    {
+      "id": "github-guard",
+      "name": "GitHub Platform Guard",
+      "category": "platform",
+      "description": "Protects GitHub via the gh CLI and API: repository deletion, release removal, deploy-key and webhook changes, and secret deletion. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 16
+    },
+    {
+      "id": "gitlab-guard",
+      "name": "GitLab Platform Guard",
+      "category": "platform",
+      "description": "Protects GitLab via the glab CLI and API: project deletion, release removal, and runner deregistration. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 11
+    },
+    {
+      "id": "deploy-platforms-guard",
+      "name": "Deploy Platforms Guard",
+      "category": "platform",
+      "description": "Protects deployment platforms: project/service/environment deletion, volume wipes, variable removal, and app teardown across Railway, Kamal, and Modal. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 45
+    },
+    {
+      "id": "email-guard",
+      "name": "Email Providers Guard",
+      "category": "email",
+      "description": "Protects transactional email providers: identity/domain deletion, template removal, suppression-list changes, and API-key deletion across SES, SendGrid, Mailgun, and Postmark. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 33
+    },
+    {
+      "id": "featureflags-guard",
+      "name": "Feature Flags Guard",
+      "category": "featureflags",
+      "description": "Protects feature-flag platforms: flag/segment deletion, environment removal, and project teardown across LaunchDarkly, Split, Flipt, and Unleash. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 38
+    },
+    {
+      "id": "loadbalancer-guard",
+      "name": "Load Balancer Guard",
+      "category": "loadbalancer",
+      "description": "Protects load balancers and reverse proxies: config deletion, listener/target-group removal, and destructive reloads across nginx, ELB/ALB, HAProxy, and Traefik. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 30
+    },
+    {
+      "id": "apigateway-guard",
+      "name": "API Gateway Guard",
+      "category": "apigateway",
+      "description": "Protects API gateways: API/stage/route deletion, consumer and plugin removal, and proxy undeployment across AWS API Gateway, Kong, and Apigee. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 43
+    },
+    {
+      "id": "iac-guard",
+      "name": "IaC Tools Guard",
+      "category": "infrastructure",
+      "description": "Protects infrastructure-as-code tools beyond Terraform: pulumi destroy and stack removal, destructive ansible runs, and atmos terraform wrappers. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 21
+    },
+    {
+      "id": "package-managers-guard",
+      "name": "Package Managers Guard",
+      "category": "packages",
+      "description": "Protects package registries and local package state: npm/yarn/pnpm unpublish and dist-tag changes, pip/cargo/gem yanks, and destructive global operations. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 18
+    },
+    {
+      "id": "remote-access-guard",
+      "name": "Remote Access Guard",
+      "category": "remote",
+      "description": "Protects remote hosts: destructive commands over ssh, overwriting remote files via scp, and rsync --delete mirroring. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 15
+    },
+    {
+      "id": "system-services-guard",
+      "name": "System Services Guard",
+      "category": "system",
+      "description": "Protects host system state: recursive chmod/chown on system paths, disabling or masking system services, and destructive systemctl operations. Derived from the destructive_command_guard pattern library.",
+      "version": "1.0.0",
+      "rule_count": 15
     }
   ]
 }

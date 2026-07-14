@@ -1,0 +1,109 @@
+{
+  "id": "mongodb-guard",
+  "name": "MongoDB Guard",
+  "category": "database",
+  "description": "MongoDB protection: dropDatabase, collection drops, deleteMany without filters, and destructive mongorestore --drop. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for drop database",
+      "description": "dropDatabase permanently deletes the entire database.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\.dropDatabase\\s*\\("
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for drop collection",
+      "description": "drop/dropCollection permanently deletes the collection.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\.drop\\s*\\(\\s*\\)|\\.dropCollection\\s*\\("
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for delete all",
+      "description": "remove({}) or deleteMany({}) deletes ALL documents. Add filter criteria.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\.(?:remove|deleteMany)\\s*\\(\\s*\\{\\s*\\}\\s*\\)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mongorestore drop",
+      "description": "mongorestore --drop deletes existing data before restoring.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mongorestore\\s+.*--drop"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for collection drop",
+      "description": "collection.drop() permanently deletes the collection.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "db\\.[a-zA-Z_][a-zA-Z0-9_]*\\.drop\\s*\\("
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

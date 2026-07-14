@@ -216,8 +216,18 @@ Rules within a policy group are evaluated in ascending priority order (lower num
 4. Validate JSON: `python3 -m json.tool packs/{id}.json > /dev/null`.
 5. Verify all regex patterns are RE2-valid (no lookaheads, no backreferences).
 
+## Derived packs (dcg import)
+
+The `*-guard` and `*-extended` packs are derived from the pattern library of
+[destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)
+(© Jeffrey Emanuel, used under its license terms), converted to this
+library's schema and Go RE2 regex syntax. When editing them, bump the pack
+version in both the pack file and `index.json`.
+
 ---
 
-## V1 category set
+## Category set
 
-`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem`
+`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system`
+
+The dashboard's category filter and icon maps (`governance.policy.tool-policies.tsx` in the tracelet repo) must list every category used here.

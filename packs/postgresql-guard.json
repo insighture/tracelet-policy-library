@@ -1,0 +1,170 @@
+{
+  "id": "postgresql-guard",
+  "name": "PostgreSQL Guard",
+  "category": "database",
+  "description": "Deep PostgreSQL protection: DROP DATABASE/TABLE/SCHEMA, TRUNCATE, unqualified DELETE, dropdb, and destructive pg_dump --clean restores. Complements Database Baseline with engine-specific coverage. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for drop database",
+      "description": "DROP DATABASE permanently deletes the entire database (even with IF EXISTS). Verify and back up first. Safer alternative: `pg_dump -h {host} -U {user} {dbname} > backup.sql` — Create a full backup before dropping.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDROP\\s+DATABASE\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for drop schema",
+      "description": "DROP SCHEMA permanently deletes the schema and all its objects (even with IF EXISTS). Safer alternative: `pg_dump -n {schema_name} {dbname} > schema_backup.sql` — Backup schema before dropping.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDROP\\s+SCHEMA\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for dropdb cli",
+      "description": "dropdb permanently deletes the entire database. Verify the database name carefully. Safer alternative: `pg_dump -h {host} -U {user} {dbname} > backup.sql` — Create a full backup before dropping.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bdropdb\\s+"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for drop table",
+      "description": "DROP TABLE permanently deletes the table (even with IF EXISTS). Verify and back up first. Safer alternative: `pg_dump -t {tablename} {dbname} > table_backup.sql` — Backup the table before dropping.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDROP\\s+TABLE\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for truncate table",
+      "description": "TRUNCATE permanently deletes all rows without logging individual deletions. Safer alternative: `SELECT COUNT(*) FROM {tablename}` — Check how many rows would be deleted.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bTRUNCATE\\s+(?:TABLE\\s+)?[a-zA-Z_]"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for delete without where",
+      "description": "DELETE without WHERE clause deletes ALL rows. Add a WHERE clause or use TRUNCATE intentionally. Safer alternative: `DELETE FROM {tablename} WHERE {condition}` — Add a WHERE clause to limit deletion.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)DELETE\\s+FROM\\s+(?:(?:[a-zA-Z_][a-zA-Z0-9_]*|\"[^\"]+\")(?:\\.(?:[a-zA-Z_][a-zA-Z0-9_]*|\"[^\"]+\"))?)\\s*(?:;|$)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pg dump clean",
+      "description": "pg_dump --clean drops objects before creating them. This can be destructive on restore. Safer alternative: `pg_dump {dbname} > backup.sql` — Create backup without DROP statements.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "pg_dump\\s+.*(?:--clean|-c\\b)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

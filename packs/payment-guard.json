@@ -1,0 +1,409 @@
+{
+  "id": "payment-guard",
+  "name": "Payment Providers Guard",
+  "category": "payment",
+  "description": "Protects payment providers: deleting customers, subscriptions, webhooks, and products, and issuing refunds across Stripe, Braintree, and Square. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for stripe customers delete",
+      "description": "stripe customers delete permanently deletes a customer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+customers\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for braintree customer delete",
+      "description": "braintree.Customer.delete permanently deletes a Braintree customer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bbraintree\\.Customer\\.delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for braintree gateway customer delete",
+      "description": "gateway.customer.delete permanently deletes a Braintree customer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgateway\\.customer\\.delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for braintree merchant account delete",
+      "description": "gateway.merchant_account.delete removes a Braintree merchant account.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgateway\\.merchant_account\\.delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for square api batch delete catalog objects",
+      "description": "Square API POST /v2/catalog/batch-delete deletes multiple catalog objects.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))POST\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/catalog/batch-delete(?:[^\\s'\"]*)?|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/catalog/batch-delete(?:[^\\s'\"]*)?[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for square api delete customer",
+      "description": "Square API DELETE /v2/customers/{id} deletes a customer.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/customers/[^\\s'\"]+|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/customers/[^\\s'\"]+[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for square api delete location",
+      "description": "Square API DELETE /v2/locations/{id} deletes a location.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/locations/[^\\s'\"]+|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/locations/[^\\s'\"]+[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stripe webhook endpoints delete",
+      "description": "stripe webhook_endpoints delete removes a Stripe webhook endpoint, breaking notifications.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+webhook[_-]endpoints\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stripe products delete",
+      "description": "stripe products delete permanently deletes a product.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+products\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stripe prices delete",
+      "description": "stripe prices delete permanently deletes a price.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+prices\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stripe coupons delete",
+      "description": "stripe coupons delete permanently deletes a coupon.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+coupons\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stripe api delete",
+      "description": "Stripe API DELETE calls remove Stripe resources.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*api\\.stripe\\.com.*\\/v1\\/|.*api\\.stripe\\.com.*\\/v1\\/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for braintree api delete",
+      "description": "Braintree API DELETE calls remove payment resources (customers, webhooks, etc.).",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*braintreegateway\\.com|.*braintreegateway\\.com.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for braintree payment method delete",
+      "description": "gateway.payment_method.delete removes a stored payment method.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgateway\\.payment_method\\.delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for braintree subscription cancel",
+      "description": "gateway.subscription.cancel cancels a subscription, impacting billing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgateway\\.subscription\\.cancel\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for square catalog delete",
+      "description": "square catalog delete removes catalog objects, impacting products and inventory.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bsquare\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+catalog\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for square api delete catalog object",
+      "description": "Square API DELETE /v2/catalog/object/{id} deletes a catalog object.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/catalog/object/[^\\s'\"]+|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/catalog/object/[^\\s'\"]+[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on stripe api keys roll",
+      "description": "stripe api_keys roll rotates API keys; coordinate to avoid outages.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bstripe\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api[_-]keys\\s+roll\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for square api delete payment link",
+      "description": "Square API DELETE /v2/online-checkout/payment-links/{id} deletes a payment link.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/online-checkout/payment-links/[^\\s'\"]+|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/online-checkout/payment-links/[^\\s'\"]+[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for square api delete webhook subscription",
+      "description": "Square API DELETE /v2/webhooks/subscriptions/{id} deletes a webhook subscription.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/webhooks/subscriptions/[^\\s'\"]+|[^\\n]*?https?://(?:api\\.squareup\\.com|connect\\.squareup(?:sandbox)?\\.com)[^\\s'\"]*/v2/webhooks/subscriptions/[^\\s'\"]+[^\\n]*?(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

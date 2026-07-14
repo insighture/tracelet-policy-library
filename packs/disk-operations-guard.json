@@ -1,0 +1,795 @@
+{
+  "id": "disk-operations-guard",
+  "name": "Disk Operations Guard",
+  "category": "filesystem",
+  "description": "Guards low-level disk operations: mkfs, fdisk/parted/sgdisk partitioning, wipefs, LVM/RAID teardown, swap manipulation, and filesystem-destroying tools. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require justification for dd device",
+      "description": "dd to a block device will OVERWRITE all data on that device. Extremely dangerous!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dd\\s+.*of=['\"]?/dev/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dd wipe",
+      "description": "dd from /dev/zero or /dev/urandom to a device will WIPE all data!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dd\\s+.*if=['\"]?/dev/(?:zero|urandom|random).*of=['\"]?/dev/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fdisk edit",
+      "description": "fdisk can modify partition tables and cause data loss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fdisk\\s+['\\\"]?/dev/"
+        ],
+        "allowed_patterns": [
+          "fdisk\\b[^|;&]*\\s(?:-l|--list)\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for parted modify",
+      "description": "parted can modify partition tables and cause data loss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "parted\\b[^\\n;&|]*?['\\\"]?/dev/"
+        ],
+        "allowed_patterns": [
+          "parted\\b[^|;&]*\\s(?:-l|--list|align-check|help|print)\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mkfs",
+      "description": "mkfs formats a partition/device and ERASES all existing data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mkfs(?:\\.[a-z0-9]+)?\\s+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mkswap",
+      "description": "mkswap formats a partition as a swap area, ERASING any existing data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mkswap\\s+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for wipefs",
+      "description": "wipefs removes filesystem signatures. Use with extreme caution.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wipefs\\s+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mount bind root",
+      "description": "mount --bind to root directory can have system-wide effects.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mount\\s+.*--bind\\s+.*\\s+['\"]?/(?:$|[^a-z])"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for umount force",
+      "description": "umount -f force unmounts which may cause data loss if device is in use.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "umount\\s+.*-[a-z]*f"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for losetup device",
+      "description": "losetup modifies loop device associations. Verify before proceeding.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "losetup\\s+['\"]?/dev/loop"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm stop",
+      "description": "mdadm --stop shuts down a RAID array. Data may become inaccessible.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?(?:--stop|-S)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm remove",
+      "description": "mdadm --remove removes a drive from a RAID array. May cause data loss if redundancy is lost.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?--remove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm fail",
+      "description": "mdadm --fail marks a device as failed. Use only for intentional drive replacement.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?(?:--fail|-f)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm zero superblock",
+      "description": "mdadm --zero-superblock PERMANENTLY erases RAID metadata. Array cannot be reassembled.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?--zero-superblock\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm create",
+      "description": "mdadm --create initializes a new RAID array, ERASING existing data on member devices.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?(?:--create|-C)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mdadm grow",
+      "description": "mdadm --grow reshapes a RAID array. Interruption can cause data loss. Backup first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "mdadm\\s+(?:.*\\s+)?--grow\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs subvolume delete",
+      "description": "btrfs subvolume delete PERMANENTLY removes a subvolume and all its data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+subvolume\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs device remove",
+      "description": "btrfs device remove redistributes data off a device. Interruption causes data loss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+device\\s+(?:remove|delete)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs device add",
+      "description": "btrfs device add incorporates a device into the filesystem. Verify the device is correct.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+device\\s+add\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs balance",
+      "description": "btrfs balance redistributes data across devices. Can be slow and disruptive.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+balance\\s+start\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs check repair",
+      "description": "btrfs check --repair is DANGEROUS and can cause data loss. Backup first!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+check\\s+(?:.*\\s+)?--repair\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs rescue",
+      "description": "btrfs rescue operations modify filesystem metadata. Use only as last resort.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 410,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+rescue\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for btrfs filesystem resize",
+      "description": "btrfs filesystem resize can shrink a filesystem. Data loss if size is too small.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 420,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "btrfs\\b.*?\\s+filesystem\\s+resize\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup remove",
+      "description": "dmsetup remove detaches a device-mapper device. May cause data loss if in use.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 430,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+remove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup remove all",
+      "description": "dmsetup remove_all removes ALL device-mapper devices. Extremely dangerous!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 440,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+remove_all\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup wipe table",
+      "description": "dmsetup wipe_table replaces the device table, causing all I/O to fail.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 450,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+wipe_table\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup clear",
+      "description": "dmsetup clear removes the mapping table from a device.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 460,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+clear\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup load",
+      "description": "dmsetup load changes device mapping. Verify the new table is correct.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 470,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+load\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dmsetup create",
+      "description": "dmsetup create sets up a new device-mapper device. Verify parameters carefully.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 480,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "dmsetup\\b.*?\\s+create\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for nbd client disconnect",
+      "description": "nbd-client -d disconnects a network block device. Data loss if not properly unmounted.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 490,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "nbd-client\\s+(?:.*\\s+)?-d\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for nbd client connect",
+      "description": "nbd-client connecting a device can expose or overwrite data. Verify server and device.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 500,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "nbd-client\\s+\\S+\\s+\\d+\\s+['\"]?/dev/nbd"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pvremove",
+      "description": "pvremove ERASES LVM metadata from a physical volume. Data becomes inaccessible.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 510,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpvremove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for vgremove",
+      "description": "vgremove DELETES a volume group and all logical volumes within it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 520,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bvgremove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lvremove",
+      "description": "lvremove PERMANENTLY deletes a logical volume and ALL its data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 530,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\blvremove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for vgreduce",
+      "description": "vgreduce removes a physical volume from a volume group. Data may be lost.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 540,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bvgreduce\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lvreduce",
+      "description": "lvreduce SHRINKS a logical volume. Data loss if filesystem isn't resized first!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 550,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\blvreduce\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lvresize shrink",
+      "description": "lvresize with negative size SHRINKS the volume. Resize filesystem first or lose data!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 560,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "lvresize\\s+(?:.*\\s+)?(?:-L\\s*-|-l\\s*-|--size\\s+\\S*-)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pvmove",
+      "description": "pvmove migrates data between physical volumes. Do NOT interrupt or data may be lost.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 570,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bpvmove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lvconvert merge",
+      "description": "lvconvert --merge reverts LV to snapshot state, discarding changes since snapshot.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 580,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "lvconvert\\s+(?:.*\\s+)?--merge\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

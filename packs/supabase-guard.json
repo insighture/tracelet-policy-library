@@ -1,0 +1,369 @@
+{
+  "id": "supabase-guard",
+  "name": "Supabase Guard",
+  "category": "database",
+  "description": "Supabase CLI protection: project deletion, database resets, branch deletion, secret removal, and destructive migration commands. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for supabase db reset",
+      "description": "supabase db reset drops and recreates the entire database. All data will be lost. Safer alternative: `supabase db dump -f backup.sql` — Dump the database before resetting.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+db\\s+reset"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for supabase db push",
+      "description": "supabase db push applies migrations to the remote database. Use --dry-run to preview first. Safer alternative: `supabase db push --dry-run` — Preview migration changes without applying them.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+db\\s+push"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for supabase migration repair",
+      "description": "supabase migration repair modifies the migration history. This can cause drift between schema and migrations. Safer alternative: `supabase migration list` — Review current migration status before repairing.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+migration\\s+repair"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for supabase migration down",
+      "description": "supabase migration down reverts applied migrations. Schema changes and associated data may be lost. Safer alternative: `supabase migration list` — Review applied migrations before reverting.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+migration\\s+down"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for supabase projects delete",
+      "description": "supabase projects delete permanently removes the entire Supabase project and all its data. Safer alternative: `supabase db dump -f backup.sql --linked` — Dump the database before deleting the project.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+projects\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for supabase sso remove",
+      "description": "supabase sso remove disconnects an SSO identity provider. All users authenticating via that provider will be locked out. Safer alternative: `supabase sso list` — List SSO providers before removing.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+sso\\s+remove"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase db shell destructive",
+      "description": "supabase db shell with destructive SQL (DROP/TRUNCATE/DELETE/ALTER). Verify the command carefully. Safer alternative: `supabase db dump -f backup.sql` — Dump the database before running destructive SQL.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+db\\s+shell\\s+.*\\b(DROP|TRUNCATE|DELETE|ALTER)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase migration squash",
+      "description": "supabase migration squash consolidates migrations and omits data manipulation statements (INSERT/UPDATE/DELETE). Safer alternative: `supabase migration list` — Review migrations before squashing.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+migration\\s+squash"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase functions delete",
+      "description": "supabase functions delete removes a deployed Edge Function. This causes immediate downtime for that function. Safer alternative: `supabase functions list` — List functions to verify the correct one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+functions\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase storage rm",
+      "description": "supabase storage rm deletes objects from storage. With --recursive, entire directories are removed. Safer alternative: `supabase storage ls {path}` — List storage contents before deleting.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+storage\\s+rm"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase secrets unset",
+      "description": "supabase secrets unset removes secrets from the project. Edge Functions depending on them will break immediately.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+secrets\\s+unset"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase orgs delete",
+      "description": "supabase orgs delete permanently removes the organization and may affect all projects within it. Safer alternative: `supabase orgs list` — List organizations to verify the correct one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+orgs\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase branches delete",
+      "description": "supabase branches delete permanently removes a preview branch and its database. Safer alternative: `supabase branches list` — List branches to verify the correct one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+branches\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase domains delete",
+      "description": "supabase domains delete removes the custom domain configuration. Clients using the custom domain will lose access.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+domains\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase vanity subdomains delete",
+      "description": "supabase vanity-subdomains delete removes the vanity subdomain. Clients using it will lose access.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+vanity-subdomains\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase network restrictions update",
+      "description": "supabase network-restrictions update modifies allowed CIDR ranges. Misconfiguration can lock out all database connections.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+network-restrictions\\s+update"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase config push",
+      "description": "supabase config push overwrites the remote project configuration with local config.toml settings.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+config\\s+push"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for supabase stop no backup",
+      "description": "supabase stop --no-backup stops the local stack and permanently deletes all data volumes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop\\b.*--no-backup"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

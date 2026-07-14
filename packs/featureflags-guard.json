@@ -1,0 +1,769 @@
+{
+  "id": "featureflags-guard",
+  "name": "Feature Flags Guard",
+  "category": "featureflags",
+  "description": "Protects feature-flag platforms: flag/segment deletion, environment removal, and project teardown across LaunchDarkly, Split, Flipt, and Unleash. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for ldcli flags delete",
+      "description": "ldcli flags delete permanently removes a feature flag. This cannot be undone.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+flags\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for ldcli projects delete",
+      "description": "ldcli projects delete removes an entire project and all its flags, environments, and settings.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+projects\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for ldcli environments delete",
+      "description": "ldcli environments delete removes an environment and all its flag configurations.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+environments\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for launchdarkly api delete environments",
+      "description": "DELETE request to LaunchDarkly API removes environments.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*app\\.launchdarkly\\.com/api/.*/environments/|.*app\\.launchdarkly\\.com/api/.*/environments/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for launchdarkly api delete flags",
+      "description": "DELETE request to LaunchDarkly API removes feature flags.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*app\\.launchdarkly\\.com/api/.*/flags/|.*app\\.launchdarkly\\.com/api/.*/flags/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for launchdarkly api delete projects",
+      "description": "DELETE request to LaunchDarkly API removes projects.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*app\\.launchdarkly\\.com/api/v2/projects/[^/\\s]+(?:\\s|$)|.*app\\.launchdarkly\\.com/api/v2/projects/[^/\\s]+(?:\\s|$).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split splits delete",
+      "description": "split splits delete permanently removes a split definition. This cannot be undone.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+splits\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split environments delete",
+      "description": "split environments delete removes an environment and all its configurations.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+environments\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split traffic types delete",
+      "description": "split traffic-types delete removes a traffic type. This affects all splits using it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+traffic-types\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split workspaces delete",
+      "description": "split workspaces delete removes a workspace and all its resources.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 190,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+workspaces\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ldcli flags archive",
+      "description": "ldcli flags archive soft-deletes a feature flag. While recoverable, this affects all environments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+flags\\s+archive\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split api delete splits",
+      "description": "DELETE request to Split.io API removes split definitions.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*api\\.split\\.io/.*/splits/|.*api\\.split\\.io/.*/splits/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ldcli segments delete",
+      "description": "ldcli segments delete removes a user segment and its targeting rules.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+segments\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for split api delete environments",
+      "description": "DELETE request to Split.io API removes environments.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*api\\.split\\.io/.*/environments/|.*api\\.split\\.io/.*/environments/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ldcli metrics delete",
+      "description": "ldcli metrics delete removes a metric and its experiment data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ldcli(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+metrics\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for flipt flag delete",
+      "description": "flipt flag delete permanently removes a feature flag. This cannot be undone.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+flag\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for launchdarkly api delete segments",
+      "description": "DELETE request to LaunchDarkly API removes segments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*app\\.launchdarkly\\.com/api/.*/segments/|.*app\\.launchdarkly\\.com/api/.*/segments/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for flipt namespace delete",
+      "description": "flipt namespace delete removes a namespace and all its flags, segments, and rules.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+namespace\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for launchdarkly api delete generic",
+      "description": "DELETE request to LaunchDarkly API can remove resources.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*app\\.launchdarkly\\.com/api/|.*app\\.launchdarkly\\.com/api/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for unleash features delete",
+      "description": "unleash features delete permanently removes a feature toggle. This cannot be undone.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+features?\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for split splits kill",
+      "description": "split splits kill terminates a split, stopping all traffic to treatments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+splits\\s+kill\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for unleash projects delete",
+      "description": "unleash projects delete removes a project and all its feature toggles.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+projects?\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for split segments delete",
+      "description": "split segments delete removes a segment and its targeting rules.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "split(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+segments\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for unleash environments delete",
+      "description": "unleash environments delete removes an environment.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+environments?\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for split api delete segments",
+      "description": "DELETE request to Split.io API removes segments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*api\\.split\\.io/.*/segments/|.*api\\.split\\.io/.*/segments/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for unleash api delete features",
+      "description": "DELETE request to Unleash API removes feature toggles.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*?/api/admin/projects/.*/features/|.*?/api/admin/projects/.*/features/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for split api delete generic",
+      "description": "DELETE request to Split.io API can remove resources.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*api\\.split\\.io|.*api\\.split\\.io.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for unleash api delete projects",
+      "description": "DELETE request to Unleash API removes projects.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*?/api/admin/projects/[^/\\s]+(?:\\s|$)|.*?/api/admin/projects/[^/\\s]+(?:\\s|$).*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for flipt segment delete",
+      "description": "flipt segment delete removes a segment and its constraints.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+segment\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for flipt rule delete",
+      "description": "flipt rule delete removes a targeting rule from a flag.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+rule\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on flipt constraint delete",
+      "description": "flipt constraint delete removes a constraint from a segment.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+constraint\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for flipt variant delete",
+      "description": "flipt variant delete removes a variant from a flag.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+variant\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on flipt distribution delete",
+      "description": "flipt distribution delete removes a distribution from a rule.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "flipt(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+distribution\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for flipt api delete",
+      "description": "DELETE request to Flipt API can remove flags, segments, or rules.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "curl\\s+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)\\s+.*?/api/v1/"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for unleash features archive",
+      "description": "unleash features archive soft-deletes a feature toggle.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+features?\\s+archive\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for unleash strategies delete",
+      "description": "unleash strategies delete removes a custom strategy.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+strategies?\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for unleash api keys delete",
+      "description": "unleash api-keys delete removes an API key.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "unleash(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api-keys?\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for unleash api delete generic",
+      "description": "DELETE request to Unleash API can remove resources.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*?/api/admin/|.*?/api/admin/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

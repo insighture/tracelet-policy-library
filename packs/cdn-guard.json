@@ -1,0 +1,529 @@
+{
+  "id": "cdn-guard",
+  "name": "CDN Guard",
+  "category": "cdn",
+  "description": "Protects CDN and edge platforms: worker/service deletion, distribution removal, and cache purges across Cloudflare Workers, Fastly, and CloudFront. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for wrangler delete",
+      "description": "wrangler delete removes a Worker from Cloudflare.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for wrangler kv namespace delete",
+      "description": "wrangler kv:namespace delete removes an entire KV namespace.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+kv:namespace\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for wrangler r2 bucket delete",
+      "description": "wrangler r2 bucket delete removes an entire R2 bucket.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+r2\\s+bucket\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for wrangler d1 delete",
+      "description": "wrangler d1 delete removes a D1 database.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+d1\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for fastly service delete",
+      "description": "fastly service delete removes a Fastly service entirely.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+service\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for fastly compute delete",
+      "description": "fastly compute delete removes compute package.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+compute\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for cloudfront delete distribution",
+      "description": "aws cloudfront delete-distribution removes a CloudFront distribution.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-distribution\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for cloudfront delete key group",
+      "description": "aws cloudfront delete-key-group removes a key group used for signed URLs.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-key-group\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for wrangler deployments rollback",
+      "description": "wrangler deployments rollback reverts to a previous Worker version.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+deployments\\s+rollback\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for wrangler kv bulk delete",
+      "description": "wrangler kv:bulk delete removes multiple keys from KV storage.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+kv:bulk\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly domain delete",
+      "description": "fastly domain delete removes a domain from a service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+domain\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly backend delete",
+      "description": "fastly backend delete removes a backend origin server.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+backend\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly vcl delete",
+      "description": "fastly vcl delete removes VCL configuration.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+vcl\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly dictionary delete",
+      "description": "fastly dictionary delete removes an edge dictionary.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+dictionary\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly acl delete",
+      "description": "fastly acl delete removes an access control list.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+acl\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly logging delete",
+      "description": "fastly logging delete removes logging endpoints.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+logging\\s+\\S+\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for fastly version activate",
+      "description": "fastly service version activate can cause service disruption if misconfigured.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+service\\s+version\\s+activate\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudfront delete cache policy",
+      "description": "aws cloudfront delete-cache-policy removes a cache policy.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-cache-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on wrangler kv key delete",
+      "description": "wrangler kv:key delete removes a key from KV storage.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+kv:key\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudfront delete origin request policy",
+      "description": "aws cloudfront delete-origin-request-policy removes an origin request policy.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-origin-request-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on wrangler r2 object delete",
+      "description": "wrangler r2 object delete removes an object from R2 storage.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "wrangler(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+r2\\s+object\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudfront delete function",
+      "description": "aws cloudfront delete-function removes a CloudFront function.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-function\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on fastly dictionary item delete",
+      "description": "fastly dictionary-item delete removes dictionary entries.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+dictionary-item\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudfront delete response headers policy",
+      "description": "aws cloudfront delete-response-headers-policy removes a response headers policy.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+delete-response-headers-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on fastly acl entry delete",
+      "description": "fastly acl-entry delete removes ACL entries.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "fastly(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+acl-entry\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cloudfront create invalidation",
+      "description": "aws cloudfront create-invalidation creates a cache invalidation (has cost implications).",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b.*?\\bcloudfront\\s+create-invalidation\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

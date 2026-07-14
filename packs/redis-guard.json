@@ -1,0 +1,269 @@
+{
+  "id": "redis-guard",
+  "name": "Redis Guard",
+  "category": "database",
+  "description": "Redis protection: FLUSHALL/FLUSHDB, CONFIG REWRITE, destructive key operations, and cluster reset commands. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for flushall",
+      "description": "FLUSHALL permanently deletes ALL keys in ALL databases.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bFLUSHALL\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for debug crash",
+      "description": "DEBUG SEGFAULT/CRASH will crash the Redis server.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDEBUG\\s+(?:SEGFAULT|CRASH)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for config dangerous",
+      "description": "CONFIG SET for dir/dbfilename/slaveof can be used for security attacks.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+SET\\s+(?:dir|dbfilename|slaveof|replicaof)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for config set maxmemory",
+      "description": "CONFIG SET maxmemory can trigger immediate mass key eviction if new limit is below current usage.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+SET\\s+maxmemory\\b(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for config set maxmemory policy",
+      "description": "CONFIG SET maxmemory-policy changes how Redis evicts keys, risking silent data loss.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+SET\\s+maxmemory-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for flushdb",
+      "description": "FLUSHDB permanently deletes ALL keys in the current database.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bFLUSHDB\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for mass delete pipeline",
+      "description": "Redis KEYS/SCAN piped to DEL/UNLINK can delete many keys at once.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bredis-cli\\b.*\\b(?:KEYS\\b|--scan\\b|SCAN\\b).*\\|\\s*xargs\\s+(?:-\\S+(?:\\s+\\S+)?\\s+)*redis-cli(?:\\s+\\S+)*\\s+(?:DEL|UNLINK)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for debug sleep",
+      "description": "DEBUG SLEEP blocks the Redis server and can cause availability issues.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDEBUG\\s+SLEEP\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for shutdown",
+      "description": "SHUTDOWN stops the Redis server. SHUTDOWN NOSAVE risks data loss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bSHUTDOWN\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for config set save",
+      "description": "CONFIG SET save can disable RDB persistence entirely, risking data loss on restart.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+SET\\s+save\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for config set appendonly",
+      "description": "CONFIG SET appendonly can disable AOF persistence, risking data loss on restart.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+SET\\s+appendonly\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for config rewrite",
+      "description": "CONFIG REWRITE persists all runtime CONFIG SET changes to redis.conf permanently.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+REWRITE\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on config resetstat",
+      "description": "CONFIG RESETSTAT clears Redis runtime counters and can hide recent incidents.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bCONFIG\\s+RESETSTAT\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

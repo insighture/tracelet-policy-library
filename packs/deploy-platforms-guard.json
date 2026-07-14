@@ -1,0 +1,912 @@
+{
+  "id": "deploy-platforms-guard",
+  "name": "Deploy Platforms Guard",
+  "category": "platform",
+  "description": "Protects deployment platforms: project/service/environment deletion, volume wipes, variable removal, and app teardown across Railway, Kamal, and Modal. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for railway project delete",
+      "description": "railway delete schedules deletion of the entire Railway project. Safer alternative: `railway status` — Confirm the currently linked project and environment before any project change.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+delete(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway project subcommand delete",
+      "description": "railway project delete schedules deletion of the entire Railway project. Safer alternative: `railway status` — Confirm the currently linked project and environment before any project change.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+project\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway environment delete",
+      "description": "railway environment delete removes a Railway environment and its resources. Safer alternative: `railway environment list` — List environments and verify that production is not the target.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:environment|env)\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway service delete",
+      "description": "railway service delete permanently deletes a Railway service. Safer alternative: `railway service list` — List services before deleting or changing one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+service\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway function delete",
+      "description": "railway functions delete removes a Railway serverless function. Safer alternative: `railway functions list` — List functions before deleting one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:function|functions|func|funcs|fn|fns)\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway volume delete",
+      "description": "railway volume delete removes persistent Railway storage. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+volume\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway api project delete",
+      "description": "Railway Public API project deletion mutation detected. Safer alternative: `railway status` — Confirm the currently linked project and environment before any project change.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:projectDelete|projectScheduleDelete)|(?:projectDelete|projectScheduleDelete)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway api environment delete",
+      "description": "Railway Public API environment deletion mutation detected. Safer alternative: `railway environment list` — List environments and verify that production is not the target.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*environmentDelete|environmentDelete(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway api service delete",
+      "description": "Railway Public API service deletion mutation detected. Safer alternative: `railway service list` — List services before deleting or changing one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*serviceDelete|serviceDelete(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway api volume delete",
+      "description": "Railway Public API volume deletion mutation detected. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 190,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:volumeDelete|volumeInstanceDelete)|(?:volumeDelete|volumeInstanceDelete)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway volume detach",
+      "description": "railway volume detach disconnects persistent storage from a service. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+volume\\s+detach(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for railway api volume backup restore",
+      "description": "Railway Public API volume backup restore mutation detected. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*volumeInstanceBackupRestore|volumeInstanceBackupRestore(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway variable delete",
+      "description": "railway variable delete removes Railway environment variables. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:variable|variables|vars|var)\\s+(?:delete|remove|rm)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kamal remove",
+      "description": "kamal remove tears down the entire deployment, including stateful accessories. Safer alternative: `kamal details` — Show the current containers across servers before tearing anything down.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+remove(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway database variable set",
+      "description": "railway variable set is changing a database connection variable. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:variable|variables|vars|var)\\s+(?:set|upsert)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:\\s|[^=\\\\]\\\\?[\"'])(?:DATABASE_URL|DATABASE_PRIVATE_URL|DATABASE_PUBLIC_URL|RAILWAY_DATABASE_URL|PGHOST|PGPORT|PGUSER|PGPASSWORD|PGDATABASE|POSTGRES_HOST|POSTGRES_PORT|POSTGRES_USER|POSTGRES_PASSWORD|POSTGRES_DB|POSTGRES_DATABASE|POSTGRES_URL|POSTGRES_PRIVATE_URL|POSTGRES_PUBLIC_URL|POSTGRESQL_URL|POSTGRESQL_PRIVATE_URL|POSTGRESQL_PUBLIC_URL|MYSQL_URL|MYSQL_PRIVATE_URL|MYSQL_PUBLIC_URL|MYSQLHOST|MYSQLPORT|MYSQLUSER|MYSQLPASSWORD|MYSQLDATABASE|REDIS_URL|REDIS_PRIVATE_URL|REDIS_PUBLIC_URL|REDISHOST|REDISUSER|REDISPORT|REDISPASSWORD|MONGO_URL|MONGO_PRIVATE_URL|MONGO_PUBLIC_URL|MONGODB_URI|MONGODB_URL|MONGODB_PRIVATE_URL|MONGODB_PUBLIC_URL|MONGOHOST|MONGOPORT|MONGOUSER|MONGOPASSWORD)(?:\\s|=|\\\\?[\"']\\s*:|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kamal accessory remove",
+      "description": "kamal accessory remove deletes the accessory container, image, AND its host data directory. Safer alternative: `kamal accessory details` — Inspect the accessory (e.g. the database) without removing or stopping it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+accessory(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+remove(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway database variable legacy set",
+      "description": "railway variable legacy flags are changing a database connection variable. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:variable|variables|vars|var)(?:\\s+--?\\S+(?:\\s+\\S+)?)*(?:\\s+--set(?:=|\\s+)|\\s+--set-from-stdin(?:=|\\s+))(?:DATABASE_URL|DATABASE_PRIVATE_URL|DATABASE_PUBLIC_URL|RAILWAY_DATABASE_URL|PGHOST|PGPORT|PGUSER|PGPASSWORD|PGDATABASE|POSTGRES_HOST|POSTGRES_PORT|POSTGRES_USER|POSTGRES_PASSWORD|POSTGRES_DB|POSTGRES_DATABASE|POSTGRES_URL|POSTGRES_PRIVATE_URL|POSTGRES_PUBLIC_URL|POSTGRESQL_URL|POSTGRESQL_PRIVATE_URL|POSTGRESQL_PUBLIC_URL|MYSQL_URL|MYSQL_PRIVATE_URL|MYSQL_PUBLIC_URL|MYSQLHOST|MYSQLPORT|MYSQLUSER|MYSQLPASSWORD|MYSQLDATABASE|REDIS_URL|REDIS_PRIVATE_URL|REDIS_PUBLIC_URL|REDISHOST|REDISUSER|REDISPORT|REDISPASSWORD|MONGO_URL|MONGO_PRIVATE_URL|MONGO_PUBLIC_URL|MONGODB_URI|MONGODB_URL|MONGODB_PRIVATE_URL|MONGODB_PUBLIC_URL|MONGOHOST|MONGOPORT|MONGOUSER|MONGOPASSWORD)(?:\\s|=|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for modal environment delete",
+      "description": "modal environment delete schedules removal of an entire Modal environment. Safer alternative: `modal environment list` — List Modal environments to verify you are not deleting prod.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+environment\\s+(?:delete|remove|rm)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway deployment remove",
+      "description": "railway down removes the latest successful deployment. Safer alternative: `railway status` — Confirm the target service and environment before removing deployments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])railway\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+down(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for modal volume delete",
+      "description": "modal volume delete removes a Modal Volume and all data inside it. Safer alternative: `modal volume list` — List Modal Volumes to verify the target before deletion.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+volume\\s+(?:delete|remove)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api volume backup delete",
+      "description": "Railway Public API volume backup deletion mutation detected. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*volumeInstanceBackupDelete|volumeInstanceBackupDelete(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for modal secret delete",
+      "description": "modal secret delete permanently removes a published Modal Secret. Safer alternative: `modal secret list` — List Modal Secrets before deleting or overwriting one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+secret\\s+(?:delete|remove|rm)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api volume backup schedule update",
+      "description": "Railway Public API volume backup schedule update mutation detected. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*volumeInstanceBackupScheduleUpdate|volumeInstanceBackupScheduleUpdate(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for modal dict delete",
+      "description": "modal dict delete removes a named Modal Dict and all its data. Safer alternative: `modal dict list` — List Modal Dicts before deleting or clearing one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+dict\\s+(?:delete|remove|rm)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api volume detach",
+      "description": "Railway Public API volume detach mutation detected. Safer alternative: `railway volume list` — List volumes and identify any database storage before changing it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*volumeInstanceUpdate(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?serviceId[\"']?\\s*:\\s*null|volumeInstanceUpdate(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?serviceId[\"']?\\s*:\\s*null(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for modal queue delete",
+      "description": "modal queue delete removes a named Modal Queue and all its data. Safer alternative: `modal queue list` — List Modal Queues before deleting or clearing one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+queue\\s+(?:delete|remove|rm)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api variable delete",
+      "description": "Railway Public API variable deletion mutation detected. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*variableDelete|variableDelete(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api variable collection replace",
+      "description": "Railway Public API variableCollectionUpsert with replace=true detected. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*variableCollectionUpsert(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?replace[\"']?[ \\t]*:[ \\t]*true|(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?replace[\"']?[ \\t]*:[ \\t]*true(?:[^;&|\\r\\n]|\\\\\\r?\\n)*variableCollectionUpsert|variableCollectionUpsert(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?replace[\"']?[ \\t]*:[ \\t]*true|variableCollectionUpsert(?:[^;&|\\r\\n]|\\\\\\r?\\n)*[\"']?replace[\"']?[ \\t]*:[ \\t]*true(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)|[\"']?replace[\"']?[ \\t]*:[ \\t]*true(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*variableCollectionUpsert|[\"']?replace[\"']?[ \\t]*:[ \\t]*true(?:[^;&|\\r\\n]|\\\\\\r?\\n)*variableCollectionUpsert(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token))"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api database variable upsert",
+      "description": "Railway Public API upsert is changing a database connection variable. Safer alternative: `railway variable list` — Review variables before deleting or overwriting them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:variableCollectionUpsert|variableUpsert)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:DATABASE_URL|DATABASE_PRIVATE_URL|DATABASE_PUBLIC_URL|RAILWAY_DATABASE_URL|PGHOST|PGPORT|PGUSER|PGPASSWORD|PGDATABASE|POSTGRES_HOST|POSTGRES_PORT|POSTGRES_USER|POSTGRES_PASSWORD|POSTGRES_DB|POSTGRES_DATABASE|POSTGRES_URL|POSTGRES_PRIVATE_URL|POSTGRES_PUBLIC_URL|POSTGRESQL_URL|POSTGRESQL_PRIVATE_URL|POSTGRESQL_PUBLIC_URL|MYSQL_URL|MYSQL_PRIVATE_URL|MYSQL_PUBLIC_URL|MYSQLHOST|MYSQLPORT|MYSQLUSER|MYSQLPASSWORD|MYSQLDATABASE|REDIS_URL|REDIS_PRIVATE_URL|REDIS_PUBLIC_URL|REDISHOST|REDISUSER|REDISPORT|REDISPASSWORD|MONGO_URL|MONGO_PRIVATE_URL|MONGO_PUBLIC_URL|MONGODB_URI|MONGODB_URL|MONGODB_PRIVATE_URL|MONGODB_PUBLIC_URL|MONGOHOST|MONGOPORT|MONGOUSER|MONGOPASSWORD)|(?:variableCollectionUpsert|variableUpsert)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:DATABASE_URL|DATABASE_PRIVATE_URL|DATABASE_PUBLIC_URL|RAILWAY_DATABASE_URL|PGHOST|PGPORT|PGUSER|PGPASSWORD|PGDATABASE|POSTGRES_HOST|POSTGRES_PORT|POSTGRES_USER|POSTGRES_PASSWORD|POSTGRES_DB|POSTGRES_DATABASE|POSTGRES_URL|POSTGRES_PRIVATE_URL|POSTGRES_PUBLIC_URL|POSTGRESQL_URL|POSTGRESQL_PRIVATE_URL|POSTGRESQL_PUBLIC_URL|MYSQL_URL|MYSQL_PRIVATE_URL|MYSQL_PUBLIC_URL|MYSQLHOST|MYSQLPORT|MYSQLUSER|MYSQLPASSWORD|MYSQLDATABASE|REDIS_URL|REDIS_PRIVATE_URL|REDIS_PUBLIC_URL|REDISHOST|REDISUSER|REDISPORT|REDISPASSWORD|MONGO_URL|MONGO_PRIVATE_URL|MONGO_PUBLIC_URL|MONGODB_URI|MONGODB_URL|MONGODB_PRIVATE_URL|MONGODB_PUBLIC_URL|MONGOHOST|MONGOPORT|MONGOUSER|MONGOPASSWORD)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on kamal prune",
+      "description": "kamal prune removes older images/containers that kamal rollback relies on. Safer alternative: `kamal app containers` — List the deployed containers/images that rollback relies on before pruning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+prune(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:all|containers|images)(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for railway api deployment remove",
+      "description": "Railway Public API deployment removal or stop mutation detected. Safer alternative: `railway status` — Confirm the target service and environment before removing deployments.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:deploymentRemove|deploymentStop)|(?:deploymentRemove|deploymentStop)(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:backboard\\.railway\\.(?:app|com)|railway\\.(?:app|com)/graphql|RAILWAY_API_(?:URL|TOKEN)|RAILWAY_TOKEN|PROJECT_ACCESS_TOKEN|Project-Access-Token)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on modal volume rm",
+      "description": "modal volume rm deletes a file inside a Modal Volume. Safer alternative: `modal volume list` — List Modal Volumes to verify the target before deletion.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+volume\\s+rm\\b"
+        ],
+        "allowed_patterns": [
+          "modal\\b[^|;&\\r\\n]*\\bvolume\\s+rm\\b(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:\\s|=)(?:-r\\b|-R\\b|--recursive\\b)[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal app remove",
+      "description": "kamal app remove takes the app offline by removing its containers and images. Safer alternative: `kamal app details` — Inspect app containers without removing or stopping them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+app(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+remove(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on modal secret create force",
+      "description": "modal secret create --force overwrites an existing Modal Secret in place. Safer alternative: `modal secret list` — List Modal Secrets before deleting or overwriting one.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+secret\\s+create\\b(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:--force|--overwrite)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal app stop",
+      "description": "kamal app stop stops the app container, causing an outage until restarted. Safer alternative: `kamal app details` — Inspect app containers without removing or stopping them.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+app(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal proxy remove",
+      "description": "kamal proxy remove drops routing for every app behind that proxy on the host. Safer alternative: `kamal proxy details` — Inspect the proxy without removing or rebooting it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+proxy(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+remove(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal proxy reboot",
+      "description": "kamal proxy reboot stops, removes, and recreates the proxy, causing a short outage. Safer alternative: `kamal proxy details` — Inspect the proxy without removing or rebooting it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+proxy(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+reboot(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal proxy stop",
+      "description": "kamal proxy stop drops routing for every app behind that proxy until it is started. Safer alternative: `kamal proxy details` — Inspect the proxy without removing or rebooting it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+proxy(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal accessory reboot",
+      "description": "kamal accessory reboot stops, removes, and recreates the accessory container (downtime). Safer alternative: `kamal accessory details` — Inspect the accessory (e.g. the database) without removing or stopping it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+accessory(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+reboot(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for kamal accessory stop",
+      "description": "kamal accessory stop stops the accessory (e.g. the database), erroring the app. Safer alternative: `kamal accessory details` — Inspect the accessory (e.g. the database) without removing or stopping it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])kamal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+accessory(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for modal app stop",
+      "description": "modal app stop terminates a Modal app and its running containers. Safer alternative: `modal app list` — List Modal apps to confirm the target before stopping it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+app\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for modal container stop",
+      "description": "modal container stop terminates a running Modal container and reassigns inputs. Safer alternative: `modal container list` — List running Modal containers before terminating one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+container\\s+stop\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for modal volume rm recursive",
+      "description": "modal volume rm -r recursively deletes files inside a Modal Volume. Safer alternative: `modal volume list` — List Modal Volumes to verify the target before deletion.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 410,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+volume\\s+rm\\b(?:[^;&|\\r\\n]|\\\\\\r?\\n)*(?:\\s|=)(?:-r\\b|-R\\b|--recursive\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for modal dict clear",
+      "description": "modal dict clear empties a Modal Dict. Safer alternative: `modal dict list` — List Modal Dicts before deleting or clearing one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 420,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+dict\\s+clear\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for modal queue clear",
+      "description": "modal queue clear drains every message from a Modal Queue. Safer alternative: `modal queue list` — List Modal Queues before deleting or clearing one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 430,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^\\w-])modal\\b(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+queue\\s+clear\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

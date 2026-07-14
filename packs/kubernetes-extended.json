@@ -1,0 +1,410 @@
+{
+  "id": "kubernetes-extended",
+  "name": "Kubernetes Extended",
+  "category": "kubernetes",
+  "description": "Extended Kubernetes protection beyond Kubernetes Baseline: broad kubectl delete/drain variants, destructive patches and scale-to-zero, helm rollback edge cases, and kustomize-driven deletions. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for delete namespace",
+      "description": "kubectl delete namespace removes the entire namespace and ALL resources within it. Safer alternative: `kubectl delete ns {ns} --dry-run=client -o yaml` — Preview what would be deleted without making changes.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+(?:namespace|ns)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for delete all namespaces",
+      "description": "kubectl delete with -A/--all-namespaces affects ALL namespaces. Very dangerous!",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+.*(?:-A\\b|--all-namespaces)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for delete pvc",
+      "description": "kubectl delete pvc may permanently delete data if ReclaimPolicy is Delete. Safer alternative: `kubectl describe pvc {name}` — Check PVC status and usage before deleting.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+(?:pvc|persistentvolumeclaim)\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for delete pv",
+      "description": "kubectl delete pv may permanently delete the underlying storage.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+(?:pv|persistentvolume)\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for delete force",
+      "description": "kubectl delete --force --grace-period=0 immediately removes resources without graceful shutdown. Safer alternative: `kubectl delete {resource} {name}` — Use default 30-second grace period for graceful shutdown.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+.*--force.*--grace-period=0|kubectl\\b.*?\\bdelete\\s+.*--grace-period=0.*--force"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kustomize delete",
+      "description": "kustomize build | kubectl delete removes all resources in the kustomization.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kustomize\\b.*?\\bbuild\\s+.*\\|\\s*kubectl\\b.*?\\bdelete"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kubectl kustomize delete",
+      "description": "kubectl kustomize | kubectl delete removes all resources in the kustomization.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bkustomize\\s+.*\\|\\s*kubectl\\b.*?\\bdelete"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kubectl delete k",
+      "description": "kubectl delete -k removes all resources defined in the kustomization. Use --dry-run first.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+-k\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for delete all",
+      "description": "kubectl delete --all removes ALL resources of that type. Use --dry-run=client first. Safer alternative: `kubectl delete {resource} --all --dry-run=client` — Preview what would be deleted without making changes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+.*--all\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for drain node",
+      "description": "kubectl drain evicts all pods from a node. Ensure proper pod disruption budgets.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdrain\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for taint noexecute",
+      "description": "kubectl taint with NoExecute evicts existing pods that don't tolerate the taint.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\btaint\\s+.*:NoExecute"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for delete workload",
+      "description": "kubectl delete deployment/statefulset/daemonset removes the workload. Use --dry-run first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+(?:deployment|statefulset|daemonset|replicaset)\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for scale to zero",
+      "description": "kubectl scale --replicas=0 stops all pods for the workload.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bscale\\s+.*--replicas=0"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for apply force",
+      "description": "kubectl apply --force deletes and recreates resources, causing downtime. Safer alternative: `kubectl apply -f {file}` — Apply without --force for in-place updates.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bapply\\s+.*--force\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for delete from directory",
+      "description": "kubectl delete -f with directories or --recursive deletes many resources at once. Safer alternative: `kubectl delete -f {specific-file}` — Delete from a specific file instead of directory.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bdelete\\s+-f\\s+\\.\\s*$|kubectl\\b.*?\\bdelete\\s+-f\\s+\\./|kubectl\\b.*?\\bdelete\\s+--recursive\\s+-f|kubectl\\b.*?\\bdelete\\s+-f.*--recursive"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rollback",
+      "description": "helm rollback reverts to a previous release. Use --dry-run to preview changes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "helm\\b.*?\\brollback\\b"
+        ],
+        "allowed_patterns": [
+          "--dry-run(?:=(?:true|client|server))?\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for upgrade force",
+      "description": "helm upgrade --force deletes and recreates resources, causing downtime.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "helm\\b.*?\\bupgrade\\s+.*--force"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for upgrade reset values",
+      "description": "helm upgrade --reset-values discards all previously set values.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "helm\\b.*?\\bupgrade\\s+.*--reset-values"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cordon node",
+      "description": "kubectl cordon marks a node unschedulable. Existing pods continue running.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "kubectl\\b.*?\\bcordon\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

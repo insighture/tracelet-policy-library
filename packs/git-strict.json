@@ -1,0 +1,395 @@
+{
+  "id": "git-strict",
+  "name": "Git Strict",
+  "category": "git",
+  "description": "Strict git hygiene for teams that want maximum protection: discarding working-tree changes (checkout --/restore), stash deletion, branch force-deletion, history rewrites (rebase, amend, filter-branch), reflog expiry, and indiscriminate git add. Complements Git Baseline (force-push and protected-branch rules live there). Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for stash clear",
+      "description": "git stash clear permanently deletes ALL stashed changes.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*stash\\s+clear"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for checkout discard",
+      "description": "git checkout -- discards uncommitted changes permanently. Use 'git stash' first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*checkout\\s+--\\s+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for checkout ref discard",
+      "description": "git checkout <ref> -- <path> overwrites working tree. Use 'git stash' first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*checkout\\s+\\S+\\s+--\\s+"
+        ],
+        "allowed_patterns": [
+          "git\\s+(?:\\S+\\s+)*checkout\\s+(?:-b|--orphan)\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for restore worktree",
+      "description": "git restore discards uncommitted changes. Use 'git stash' or 'git diff' first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*restore\\s"
+        ],
+        "allowed_patterns": [
+          "git\\s+(?:\\S+\\s+)*restore\\b[^|;&]*\\s(?:--staged|-S)\\b[^;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for restore worktree explicit",
+      "description": "git restore --worktree/-W discards uncommitted changes permanently.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*restore\\s+.*(?:--worktree|-W\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for reset merge",
+      "description": "git reset --merge can lose uncommitted changes.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*reset\\s+--merge"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rebase",
+      "description": "git rebase rewrites commit history. Disabled in strict mode.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\brebase\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for commit amend",
+      "description": "git commit --amend rewrites the last commit. Disabled in strict mode.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bcommit\\s+.*--amend"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cherry pick",
+      "description": "git cherry-pick can introduce duplicate commits. Review carefully.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bcherry-pick\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for filter branch",
+      "description": "git filter-branch rewrites entire repository history. Extremely dangerous!",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bfilter-branch\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for filter repo",
+      "description": "git filter-repo rewrites repository history. Review carefully.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bfilter-repo\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on branch force delete",
+      "description": "git branch -D/--force deletes branches without checks. Recoverable via 'git reflog'.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:[^\\s&;|`()<>]+\\s+)*branch\\s+(?:[^\\s&;|`()<>]+\\s+)*(?:-[a-zA-Z]*[Df][a-zA-Z]*(?:\\s|$)|--force(?:\\s|$))"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for reflog expire",
+      "description": "git reflog expire removes reflog entries needed for recovery.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\breflog\\s+expire"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on stash drop",
+      "description": "git stash drop deletes a single stash. Recoverable via `git fsck` (unreachable objects).",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*stash\\s+drop"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for gc aggressive",
+      "description": "git gc with aggressive/prune options can remove recoverable objects.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bgc\\s+.*--(?:aggressive|prune)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for worktree remove",
+      "description": "git worktree remove deletes a linked working tree.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bworktree\\s+remove"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on add all dot",
+      "description": "git add . stages everything including secrets, .env files, and build artifacts. Use 'git add <specific-files>' instead.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\badd\\s+['\"]?\\.['\"]?(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for submodule deinit",
+      "description": "git submodule deinit removes submodule configuration.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\bsubmodule\\s+deinit"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on add all flag",
+      "description": "git add -A/--all stages all changes including secrets, .env files, and build artifacts. Use 'git add <specific-files>' instead.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "git\\b.*?\\badd\\s+(?:-A|--all)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

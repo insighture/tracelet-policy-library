@@ -1,0 +1,101 @@
+{
+  "id": "sqlite-guard",
+  "name": "SQLite Guard",
+  "category": "database",
+  "description": "SQLite protection: DROP/DELETE statements through the sqlite3 CLI and destructive database file operations. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for drop table",
+      "description": "DROP TABLE permanently deletes the table (even with IF EXISTS). Verify it is intended.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bDROP\\s+TABLE\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)|(?:^\\s*\\.(?:schema|tables|dump|backup|help)\\b)|(?:(?i)^\\s*EXPLAIN\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for delete without where",
+      "description": "DELETE without WHERE deletes ALL rows. Add a WHERE clause.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)DELETE\\s+FROM\\s+[a-zA-Z_][a-zA-Z0-9_]*\\s*(?:;|$)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)|(?:^\\s*\\.(?:schema|tables|dump|backup|help)\\b)|(?:(?i)^\\s*EXPLAIN\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sqlite3 stdin",
+      "description": "Running SQL from file could contain destructive commands. Review the file first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "sqlite3\\s+[^\\s]+\\s+<\\s+"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)|(?:^\\s*\\.(?:schema|tables|dump|backup|help)\\b)|(?:(?i)^\\s*EXPLAIN\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on vacuum into",
+      "description": "VACUUM INTO overwrites the target file if it exists.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)VACUUM\\s+INTO\\s+"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*SELECT\\s+)|(?:^\\s*\\.(?:schema|tables|dump|backup|help)\\b)|(?:(?i)^\\s*EXPLAIN\\s+)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

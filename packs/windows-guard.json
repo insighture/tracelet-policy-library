@@ -1,0 +1,699 @@
+{
+  "id": "windows-guard",
+  "name": "Windows Guard",
+  "category": "filesystem",
+  "description": "Windows-specific protection: del /s, rd /s, Remove-Item -Recurse -Force, format, diskpart, vssadmin delete shadows, registry deletion, and destructive PowerShell one-liners. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for del recursive",
+      "description": "del /s recursively deletes every matching file in a directory tree. Safer alternative: `del /s /q <dir> /p` — Add /p to confirm each file, or scope the path precisely before deleting.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:del|erase)(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?/s\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for rd recursive",
+      "description": "rd /s deletes a directory and its entire contents. Safer alternative: `del /s /q <dir> /p` — Add /p to confirm each file, or scope the path precisely before deleting.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:rd|rmdir)(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?/s\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for remove item recurse force",
+      "description": "Remove-Item -Recurse -Force deletes a tree with no Recycle Bin and no prompt. Safer alternative: `Remove-Item -Recurse -Force <path> -WhatIf` — Re-run with -WhatIf first to preview exactly what would be deleted.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:remove-item|rmdir|rd|ri|rm|del|erase)\\b(?:[^|&\\r\\n]*\\s(?:-recurse|-r)\\b[^|&\\r\\n]*\\s(?:-force|-f)\\b|[^|&\\r\\n]*\\s(?:-force|-f)\\b[^|&\\r\\n]*\\s(?:-recurse|-r)\\b)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for format drive",
+      "description": "format <drive>: erases an entire volume.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bformat(?:\\.com|\\.exe)?\\s+(?:/\\S+\\s+)*[a-z]:(?:\\s|\\\\|/|$)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for vssadmin delete shadows",
+      "description": "vssadmin delete shadows destroys Volume Shadow Copies (System Restore + backups). Safer alternative: `vssadmin list shadows` — List shadow copies (read-only) instead of deleting them.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bvssadmin(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?delete\\s+shadows\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for wmic shadowcopy delete",
+      "description": "wmic shadowcopy delete destroys Volume Shadow Copies. Safer alternative: `vssadmin list shadows` — List shadow copies (read-only) instead of deleting them.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bwmic(?:\\.exe)?\\s+shadowcopy\\s+delete\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for format volume",
+      "description": "Format-Volume erases a volume's filesystem and data. Safer alternative: `Get-Disk / Get-Volume` — Confirm the exact disk/volume number before any clean/format — it is irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bformat-volume\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for clear disk",
+      "description": "Clear-Disk removes all partitions and data from a disk. Safer alternative: `Get-Disk / Get-Volume` — Confirm the exact disk/volume number before any clean/format — it is irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bclear-disk\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for remove partition",
+      "description": "Remove-Partition deletes a partition and its data. Safer alternative: `Get-Disk / Get-Volume` — Confirm the exact disk/volume number before any clean/format — it is irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bremove-partition\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for clear content",
+      "description": "Clear-Content empties a file's contents in place with no undo.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:clear-content|clc)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for diskpart",
+      "description": "diskpart with clean/delete/format/script reconfigures or wipes disks and partitions. Safer alternative: `Get-Disk / Get-Volume` — Confirm the exact disk/volume number before any clean/format — it is irreversible.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bdiskpart(?:\\.exe)?\\b[^|&\\r\\n]*(?:/s\\b|\\bclean\\b|\\bdelete\\b|\\bformat\\b)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for initialize or reset disk",
+      "description": "Initialize-Disk / Reset-PhysicalDisk wipe disk metadata and data. Safer alternative: `Get-Disk / Get-Volume` — Confirm the exact disk/volume number before any clean/format — it is irreversible.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:initialize-disk|reset-physicaldisk)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cipher wipe",
+      "description": "cipher /w overwrites free space, making deleted files unrecoverable.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bcipher(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?/w"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for bcdedit delete",
+      "description": "bcdedit /delete removes a boot configuration entry.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bbcdedit(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?/delete"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*vssadmin(?:\\.exe)?\\s+list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*diskpart(?:\\.exe)?\\s+(?:/s\\s+\\S+\\s+)?list\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:format-volume|clear-disk|remove-partition|initialize-disk|reset-physicaldisk)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for remove item provider",
+      "description": "Remove-Item against a registry/cert/WSMan provider path deletes that store entry.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:remove-item|ri)\\b[^|&\\r\\n]*\\b(?:hklm|hkcu|hkcr|hku|cert|wsman):"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for remove itemproperty or clear",
+      "description": "Remove-ItemProperty / Clear-Item* deletes registry values or item contents.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:remove-itemproperty|clear-item|clear-itemproperty)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for remove localuser or group",
+      "description": "Remove-LocalUser / Remove-LocalGroup deletes a local account or group.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:remove-localuser|remove-localgroup)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for disable computerrestore",
+      "description": "Disable-ComputerRestore turns off System Restore and discards restore points.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bdisable-computerrestore\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for remove vm or snapshot",
+      "description": "Remove-VM / Remove-VMSnapshot deletes a virtual machine or its checkpoints.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:remove-vm|remove-vmsnapshot|remove-vmcheckpoint)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on clear recyclebin",
+      "description": "Clear-RecycleBin permanently purges the Recycle Bin.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bclear-recyclebin\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*(?:remove-item|ri|rm|rd|rmdir|del|erase|clear-content|clc|clear-recyclebin)\\b[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|erase|rd|rmdir|remove-item|ri|rm)\\b[^|&;\\r\\n]*(?:%temp%|%tmp%|\\$env:te?mp\\b|\\$env:localappdata\\\\+temp\\b|\\\\appdata\\\\+local\\\\+temp\\\\|\\\\windows\\\\+temp\\\\|\\[system\\.io\\.path\\]::gettemppath)[^|&;\\r\\n]*$)|(?:(?i)^\\s*(?:del|rd|rmdir|format|erase)(?:\\.exe)?\\s+/\\?\\s*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for reg delete",
+      "description": "reg delete removes registry keys/values, which can break apps or Windows.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\breg(?:\\.exe)?\\s+delete\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on remove psdrive",
+      "description": "Remove-PSDrive removes a PowerShell drive mapping.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bremove-psdrive\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for net account delete",
+      "description": "net user/localgroup /delete removes a user account or local group.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bnet(?:\\.exe)?\\s+(?:user|localgroup)\\s+(?:[^|&\\r\\n]*\\s+)?/delete\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on unregister scheduledtask",
+      "description": "Unregister-ScheduledTask deletes a scheduled task.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bunregister-scheduledtask\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sc delete",
+      "description": "sc delete removes a Windows service.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bsc(?:\\.exe)?\\s+delete\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on force stop or restart computer",
+      "description": "Stop-Computer/Restart-Computer -Force shuts down/reboots without saving work.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:stop-computer|restart-computer)\\b(?:[^|&\\r\\n]*\\s-force\\b)"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for wsl unregister",
+      "description": "wsl --unregister irreversibly destroys a WSL distribution and its filesystem. Safer alternative: `wsl --export <distro> backup.tar` — Export the distribution to a tarball before unregistering — unregister deletes everything.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bwsl(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?--unregister\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on remove appxpackage",
+      "description": "Remove-AppxPackage uninstalls an app package (potentially for all users).",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bremove-appxpackage\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*[^|&;\\r\\n]*\\s-whatif\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for robocopy mirror",
+      "description": "robocopy /MIR deletes destination files that are not present in the source.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\brobocopy(?:\\.exe)?\\b[^|&\\r\\n]*\\s(?:/mir|/purge)\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on schtasks delete",
+      "description": "schtasks /delete removes scheduled tasks.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\bschtasks(?:\\.exe)?\\s+(?:[^|&\\r\\n]*\\s+)?/delete\\b"
+        ],
+        "allowed_patterns": [
+          "(?:(?i)^\\s*reg(?:\\.exe)?\\s+(?:query|export|save)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*sc(?:\\.exe)?\\s+(?:query|qc|queryex|enumdepend)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*wsl(?:\\.exe)?\\s+(?:--list|-l|--export|--status)\\b[^|&;\\r\\n]*$)|(?:(?i)^\\s*schtasks(?:\\.exe)?\\s+/query\\b[^|&;\\r\\n]*$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

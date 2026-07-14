@@ -1,0 +1,469 @@
+{
+  "id": "gcp-guard",
+  "name": "GCP Guard",
+  "category": "gcp",
+  "description": "Protects Google Cloud: project/instance deletion, GCS bucket removal, GKE cluster teardown, IAM policy changes, and destructive gcloud/gsutil operations. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for compute delete",
+      "description": "gcloud compute instances delete permanently destroys VM instances.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bcompute\\s+instances\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for disk delete",
+      "description": "gcloud compute disks delete permanently destroys disk data.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bcompute\\s+disks\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sql delete",
+      "description": "gcloud sql instances delete permanently destroys the Cloud SQL instance.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bsql\\s+instances\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gsutil rm recursive",
+      "description": "gsutil rm -r permanently deletes all objects in the path.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gsutil\\b.*?\\brm\\s+.*-r|gsutil\\b.*?\\brm\\s+-[a-z]*r"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gsutil rb",
+      "description": "gsutil rb removes the entire GCS bucket.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gsutil\\b.*?\\brb(?:\\s|$)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gke delete",
+      "description": "gcloud container clusters delete removes the entire GKE cluster.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bcontainer\\s+clusters\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for project delete",
+      "description": "gcloud projects delete removes the entire GCP project and ALL its resources!",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bprojects\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for firestore delete",
+      "description": "gcloud firestore delete removes Firestore data.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bfirestore\\s+.*delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for artifacts repositories delete",
+      "description": "gcloud artifacts repositories delete permanently deletes the repository.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bartifacts\\s+repositories\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for secrets delete",
+      "description": "gcloud secrets delete destroys a Secret Manager secret — credentials gone.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 190,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bsecrets\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for functions delete",
+      "description": "gcloud functions delete removes the Cloud Function.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bfunctions\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for kms keys destroy",
+      "description": "gcloud kms keys versions destroy schedules a CryptoKeyVersion for destruction — data encrypted with it becomes unrecoverable.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bkms\\s+keys\\s+versions\\s+destroy"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for pubsub delete",
+      "description": "gcloud pubsub delete removes Pub/Sub topics or subscriptions.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bpubsub\\s+(?:topics|subscriptions)\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for iam service accounts delete",
+      "description": "gcloud iam service-accounts delete removes a service account — workloads authenticating with it break.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\biam\\s+service-accounts\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for container images delete",
+      "description": "gcloud container images delete permanently deletes container images.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bcontainer\\s+images\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for dns managed zones delete",
+      "description": "gcloud dns managed-zones delete removes a DNS zone — domains stop resolving.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bdns\\s+managed-zones\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for artifacts docker images delete",
+      "description": "gcloud artifacts docker images delete permanently deletes container images.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bartifacts\\s+docker\\s+images\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for spanner instances delete",
+      "description": "gcloud spanner instances delete destroys a Spanner instance — all databases and data lost.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bspanner\\s+instances\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for iam roles delete",
+      "description": "gcloud iam roles delete removes a custom IAM role — all users/SAs bound to it lose the permissions.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\biam\\s+roles\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for bigtable instances delete",
+      "description": "gcloud bigtable instances delete destroys a Bigtable instance — all tables and data lost.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bbigtable\\s+instances\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for logging sinks delete",
+      "description": "gcloud logging sinks delete removes an audit-log export — compliance/forensics impact.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\blogging\\s+sinks\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for bq rm recursive",
+      "description": "bq rm -r/-f removes BigQuery datasets, tables, or models — data lost.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bbq\\b.*?\\brm\\s+.*-r\\b|\\bbq\\b.*?\\brm\\s+.*-f\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for dataproc clusters delete",
+      "description": "gcloud dataproc clusters delete destroys a Dataproc (Hadoop/Spark) cluster.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "gcloud\\b.*?\\bdataproc\\s+clusters\\s+delete"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+{
+  "id": "remote-access-guard",
+  "name": "Remote Access Guard",
+  "category": "remote",
+  "description": "Protects remote hosts: destructive commands over ssh, overwriting remote files via scp, and rsync --delete mirroring. Derived from the destructive_command_guard pattern library.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for ssh remote rm rf",
+      "description": "SSH remote execution contains destructive rm -rf command.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\brm\\s+-[a-zA-Z]*r[a-zA-Z]*f"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for ssh remote sudo rm",
+      "description": "SSH remote execution with sudo rm is high-risk.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh\\s+(?:\\S+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bsudo\\s+rm\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for scp recursive root",
+      "description": "scp -r to root (/) is extremely dangerous.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s-[A-Za-z0-9]*r[A-Za-z0-9]*\\b.*\\s(?:(?:\\S+@)?\\S+:)?/\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for scp to boot",
+      "description": "scp to /boot/ can corrupt boot configuration.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/boot(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for scp to bin",
+      "description": "scp to /bin/ or /sbin/ can overwrite system binaries.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/(?:bin|sbin)(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for scp to lib",
+      "description": "scp to /lib/ can overwrite system libraries.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/lib(?:64)?(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ssh remote git reset hard",
+      "description": "SSH remote execution contains destructive git reset --hard command.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bgit\\s+reset\\s+--hard\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for ssh remote git clean",
+      "description": "SSH remote execution contains destructive git clean -f command.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bgit\\s+clean\\s+-[a-zA-Z]*f"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for scp to etc",
+      "description": "scp to /etc/ can overwrite system configuration.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/etc(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for scp to var",
+      "description": "scp to /var/ can overwrite system data.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/var(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for scp to usr",
+      "description": "scp to /usr/ can overwrite system binaries.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/usr(?:/\\S*)?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rsync delete",
+      "description": "rsync --delete removes destination files not present in source.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "rsync\\b.*\\s--delete(?:-[a-z-]+)?\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rsync del short",
+      "description": "rsync --del is a short alias for --delete and is destructive.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "rsync\\b.*\\s--del\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on ssh keygen remove host",
+      "description": "ssh-keygen -R removes entries from known_hosts file.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh-keygen\\s+(?:\\S+\\s+)*-R\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on ssh add delete all",
+      "description": "ssh-add -d/-D removes identities from the SSH agent.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "ssh-add\\s+-[dD]\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}
