@@ -213,21 +213,21 @@ Rules within a policy group are evaluated in ascending priority order (lower num
 1. Create `packs/{id}.json` following the schema above.
 2. Add an entry to `index.json` with the correct `rule_count` matching the number of items in `rules`.
 3. Bump `version` in both files for any rule changes.
-4. Validate: `go run ./tools/validate-packs .` — checks the schema, compiles
-   every regex under Go RE2 (no lookaheads, no backreferences), and
-   cross-checks `index.json`. Must print `OK`.
-5. Run the behavioral tests: `go test ./tools/validate-packs/`.
+4. Validate JSON: `python3 -m json.tool packs/{id}.json > /dev/null`.
+5. Verify all regex patterns are RE2-valid (no lookaheads, no backreferences).
 
 ## Derived packs (dcg import)
 
-The `*-guard` and `*-extended` packs are generated from the pattern library of
+The `*-guard` and `*-extended` packs are derived from the pattern library of
 [destructive_command_guard](https://github.com/Dicklesworthstone/destructive_command_guard)
-by `tools/dcg-import/` (see its README for the pipeline and the field
-mapping). Do not hand-edit those pack files — change the generator config and
-regenerate, then bump the pack version.
+(© Jeffrey Emanuel, used under its license terms), converted to this
+library's schema and Go RE2 regex syntax. When editing them, bump the pack
+version in both the pack file and `index.json`.
 
 ---
 
-## V1 category set
+## Category set
 
-`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem`
+`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system`
+
+The dashboard's category filter and icon maps (`governance.policy.tool-policies.tsx` in the tracelet repo) must list every category used here.
