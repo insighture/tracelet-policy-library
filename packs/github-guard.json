@@ -2,8 +2,8 @@
   "id": "github-guard",
   "name": "GitHub Platform Guard",
   "category": "platform",
-  "description": "Protects GitHub via the gh CLI and API: repository deletion, release removal, deploy-key and webhook changes, and secret deletion. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "description": "Protects GitHub via the gh CLI, API, and MCP server: repository deletion, release removal, deploy-key and webhook changes, secret deletion, and merging pull requests into the default branch. Derived from the destructive_command_guard pattern library.",
+  "version": "1.1.0",
   "rules": [
     {
       "name": "Require justification for gh repo delete",
@@ -324,6 +324,64 @@
       "tools": [
         "Bash"
       ]
+    },
+    {
+      "name": "Require access request for gh pr merge",
+      "description": "gh pr merge merges a pull request into its base branch (almost always the repository's default branch), bypassing any additional human sign-off on the merge itself. Requires admin approval before proceeding.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+pr\\s+merge\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for gh api merge pull request",
+      "description": "gh api PUT/POST .../pulls/{number}/merge merges a pull request via the raw API, bypassing gh's own confirmation prompts. Requires admin approval before proceeding.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))(?:PUT|POST)\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/pulls/[^/\\s]+/merge\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for GitHub MCP merge_pull_request",
+      "description": "The GitHub MCP server's merge_pull_request tool merges a pull request into its base branch (almost always the repository's default branch) on the agent's behalf, with no CLI confirmation step. Requires admin approval before proceeding.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_tools": [
+          "mcp__github__merge_pull_request"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": null
     }
   ]
 }

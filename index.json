@@ -269,9 +269,9 @@
       "id": "github-guard",
       "name": "GitHub Platform Guard",
       "category": "platform",
-      "description": "Protects GitHub via the gh CLI and API: repository deletion, release removal, deploy-key and webhook changes, and secret deletion. Derived from the destructive_command_guard pattern library.",
-      "version": "1.0.0",
-      "rule_count": 16
+      "description": "Protects GitHub via the gh CLI, API, and MCP server: repository deletion, release removal, deploy-key and webhook changes, secret deletion, and merging pull requests into the default branch. Derived from the destructive_command_guard pattern library.",
+      "version": "1.1.0",
+      "rule_count": 19
     },
     {
       "id": "gitlab-guard",
