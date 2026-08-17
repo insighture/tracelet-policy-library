@@ -118,8 +118,8 @@
       "name": "AWS Extended",
       "category": "aws",
       "description": "Extended AWS CLI protection beyond AWS Baseline: EC2/EBS/RDS deletion, S3 wipes, IAM and security-group changes, Lambda/ECS/EKS teardown, CloudFormation stack deletion, and more. Derived from the destructive_command_guard pattern library.",
-      "version": "1.0.0",
-      "rule_count": 41
+      "version": "1.1.0",
+      "rule_count": 50
     },
     {
       "id": "kubernetes-extended",
@@ -352,6 +352,22 @@
       "description": "Protects host system state: recursive chmod/chown on system paths, disabling or masking system services, and destructive systemctl operations. Derived from the destructive_command_guard pattern library.",
       "version": "1.0.0",
       "rule_count": 15
+    },
+    {
+      "id": "aws-serverless-iac-guard",
+      "name": "AWS Serverless IaC Guard",
+      "category": "infrastructure",
+      "description": "Protects AWS serverless deployment tooling: teardown of CDK/SAM/Serverless Framework/Amplify stacks, and deploys that skip the normal confirmation/diff-review step straight into production. Complements Terraform Baseline/Extended and IaC Guard, which do not cover these CLIs.",
+      "version": "1.0.0",
+      "rule_count": 10
+    },
+    {
+      "id": "cloudwatch-guard",
+      "name": "CloudWatch Guard",
+      "category": "aws",
+      "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
+      "version": "1.0.0",
+      "rule_count": 7
     }
   ]
 }

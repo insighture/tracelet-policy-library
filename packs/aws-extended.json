@@ -3,7 +3,7 @@
   "name": "AWS Extended",
   "category": "aws",
   "description": "Extended AWS CLI protection beyond AWS Baseline: EC2/EBS/RDS deletion, S3 wipes, IAM and security-group changes, Lambda/ECS/EKS teardown, CloudFormation stack deletion, and more. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "rules": [
     {
       "name": "Require access request for ec2 terminate",
@@ -816,6 +816,186 @@
       "rule_config": {
         "blocked_patterns": [
           "aws\\b.*?\\bglue\\s+delete-job\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for lambda zero concurrency",
+      "description": "aws lambda put-function-concurrency --reserved-concurrent-executions 0 throttles all invocations to zero — functionally a denial of service for the function.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blambda\\s+put-function-concurrency\\b.*--reserved-concurrent-executions[=\\s]+0\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lambda environment overwrite",
+      "description": "aws lambda update-function-configuration --environment fully replaces the function's environment variables (not a merge) — can silently wipe secrets or config the function depends on.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 360,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blambda\\s+update-function-configuration\\b.*--environment\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for lambda public function url",
+      "description": "aws lambda create-function-url-config --auth-type NONE creates a publicly reachable HTTPS endpoint for the function with no IAM authentication.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blambda\\s+create-function-url-config\\b.*--auth-type[=\\s]+NONE\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for lambda execution role trust policy edit",
+      "description": "aws iam update-assume-role-policy changes who/what can assume a role — on a Lambda execution role this can widen who can invoke the function's permissions, enabling privilege escalation.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 370,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\biam\\s+update-assume-role-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for rds public snapshot share",
+      "description": "aws rds modify-db-snapshot-attribute --values-to-add all makes a database snapshot restorable by any AWS account — a data-exfiltration-class exposure.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\brds\\s+modify-db-snapshot-attribute\\b.*--values-to-add[=\\s]+all\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rds immediate modify",
+      "description": "aws rds modify-db-instance --apply-immediately applies pending changes right away instead of at the next maintenance window, which can force a failover or brief downtime on a live database.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 380,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\brds\\s+modify-db-instance\\b.*--apply-immediately\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for rds promote read replica",
+      "description": "aws rds promote-read-replica breaks the replica out of its replication topology into a standalone primary — hard to reverse and can strand downstream consumers of the old topology.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\brds\\s+promote-read-replica\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on rds stop db instance",
+      "description": "aws rds stop-db-instance takes the database offline. Reversible via start-db-instance, but causes an outage while stopped.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 390,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\brds\\s+stop-db-instance\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on rds reboot db instance",
+      "description": "aws rds reboot-db-instance causes a brief connection interruption; --force-failover also fails over a Multi-AZ instance to its standby.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\brds\\s+reboot-db-instance\\b"
         ]
       },
       "events": [
