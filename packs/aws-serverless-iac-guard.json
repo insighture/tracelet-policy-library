@@ -1,0 +1,209 @@
+{
+  "id": "aws-serverless-iac-guard",
+  "name": "AWS Serverless IaC Guard",
+  "category": "infrastructure",
+  "description": "Protects AWS serverless deployment tooling: teardown of CDK/SAM/Serverless Framework/Amplify stacks, and deploys that skip the normal confirmation/diff-review step straight into production. Complements Terraform Baseline/Extended and IaC Guard, which do not cover these CLIs.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for cdk destroy",
+      "description": "cdk destroy tears down every resource in the stack. Preview with 'cdk diff' first.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcdk\\s+destroy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for sam delete",
+      "description": "sam delete removes the deployed CloudFormation stack and, unless --no-prompts is overridden, its artifacts bucket. Irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bsam\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for serverless remove",
+      "description": "serverless remove (or its sls alias) deletes the entire deployed service — all functions, API Gateway resources, and the CloudFormation stack.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:serverless|sls)\\s+remove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for amplify delete",
+      "description": "amplify delete removes the entire Amplify project and all its backend resources. Irreversible.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bamplify\\s+delete\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for amplify remove category",
+      "description": "amplify remove <category> deletes a configured backend resource (auth, api, storage, function, etc.) from the project.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bamplify\\s+remove\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cdk deploy skip approval",
+      "description": "cdk deploy --require-approval never skips the manual review of IAM/security-group changes before deploying — verify the diff was reviewed some other way.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcdk\\s+deploy\\b.*--require-approval[=\\s]+never\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for sam deploy skip confirmation",
+      "description": "sam deploy --no-confirm-changeset skips the changeset review step, deploying whatever SAM generated without a human checking it first.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bsam\\s+deploy\\b.*--no-confirm-changeset\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on serverless deploy to prod stage",
+      "description": "serverless/sls deploy --stage prod (or production) deploys directly to the production stage.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 170,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:serverless|sls)\\s+deploy\\b.*--stage[=\\s]+prod(?:uction)?\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on sam sync to prod stack",
+      "description": "sam sync bypasses the normal CloudFormation changeset flow for fast dev-loop deploys. Running it against a stack whose name contains 'prod' pushes unreviewed code straight to production.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 180,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bsam\\s+sync\\b.*--stack-name[=\\s]+\\S*prod\\S*\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on amplify push skip confirmation",
+      "description": "amplify push --yes (or -y) skips the review-then-confirm prompt before pushing backend changes to the cloud.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 190,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bamplify\\s+push\\b.*(?:--yes\\b|\\s-y\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

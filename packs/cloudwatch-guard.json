@@ -1,0 +1,149 @@
+{
+  "id": "cloudwatch-guard",
+  "name": "CloudWatch Guard",
+  "category": "aws",
+  "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for logs delete subscription filter",
+      "description": "aws logs delete-subscription-filter cuts a log group off from wherever it was streaming (SIEM, Lambda processor, Kinesis) — a common way to blind security monitoring without deleting the logs themselves.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blogs\\s+delete-subscription-filter\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudwatch delete alarms",
+      "description": "aws cloudwatch delete-alarms permanently removes one or more alarms (including composite alarms) and their history.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\bcloudwatch\\s+delete-alarms\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudwatch disable alarm actions",
+      "description": "aws cloudwatch disable-alarm-actions silences an alarm's notifications without deleting it — the alarm still shows as configured, making the silence easy to miss.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\bcloudwatch\\s+disable-alarm-actions\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for logs put retention policy",
+      "description": "aws logs put-retention-policy changes how long a log group is kept. Shortening it destroys older audit/forensic data on the next retention sweep.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blogs\\s+put-retention-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cloudwatch delete dashboards",
+      "description": "aws cloudwatch delete-dashboards removes one or more saved dashboards.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\bcloudwatch\\s+delete-dashboards\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on logs delete metric filter",
+      "description": "aws logs delete-metric-filter removes a metric filter, breaking any alarm derived from it.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\blogs\\s+delete-metric-filter\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cloudwatch set alarm state",
+      "description": "aws cloudwatch set-alarm-state manually overrides an alarm's state (e.g. forcing it to OK), which can mask an active incident until the next real evaluation.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b.*?\\bcloudwatch\\s+set-alarm-state\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}
