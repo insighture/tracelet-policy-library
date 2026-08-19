@@ -54,8 +54,8 @@
       "name": "Terraform Baseline",
       "category": "terraform",
       "description": "Guards infrastructure-as-code operations: gates apply, destroy, and state operations behind admin access request.",
-      "version": "1.1.0",
-      "rule_count": 6
+      "version": "1.1.1",
+      "rule_count": 7
     },
     {
       "id": "filesystem-baseline",
