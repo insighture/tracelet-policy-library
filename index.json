@@ -30,7 +30,7 @@
       "name": "Git Baseline",
       "category": "git",
       "description": "Guards protected branches from force-pushes and unreviewed direct pushes. Guards against accidental hard resets, dangerous untracked-file removal, and credential exposure in commits.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "rule_count": 7
     },
     {
