@@ -3,7 +3,7 @@
   "name": "Terraform Baseline",
   "category": "terraform",
   "description": "Guards infrastructure-as-code operations: gates apply, destroy, and state operations behind admin access request, warns on tfstate reads that may expose secrets. Enforces the principle that no AI agent should unilaterally change production infrastructure.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request for terraform destroy",
@@ -71,6 +71,20 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": ["terraform\\s+import\\b"]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Bash"]
+    },
+    {
+      "name": "Warn on terraform force-unlock",
+      "description": "terraform force-unlock releases a state lock without waiting for the in-progress operation to finish. If another apply is genuinely still running, this lets two operations write to the same state concurrently and corrupt it. Warn so the operator confirms no other operation is actually in flight before proceeding.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": ["terraform\\s+force-unlock\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
