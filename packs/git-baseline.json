@@ -3,7 +3,7 @@
   "name": "Git Baseline",
   "category": "git",
   "description": "Guards protected branches from force-pushes and unreviewed direct pushes. Guards against accidental hard resets, dangerous untracked-file removal, and credential exposure in commits. Uses a tiered approach: require admin approval for force-push to main/master, secret detection, and pushes to protected branches; require justification for other destructive git operations.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request for force-push to main or master",
@@ -45,7 +45,7 @@
       "priority": 200,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["git\\s+push\\b.*\\b(main|master|production|release)\\b"]
+        "blocked_patterns": ["git\\s+push\\b.*(?:^|[\\s:])(main|master|production|release)(?:$|[\\s:])"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
