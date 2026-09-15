@@ -1,0 +1,57 @@
+{
+  "id": "financial-baseline",
+  "name": "Financial Information Baseline",
+  "category": "financial",
+  "description": "Financial data hygiene: redacts credit card numbers and IBAN codes out of prompts, tool inputs, and tool outputs, requires a written reason for likely US bank account numbers, and flags Bitcoin wallet addresses. The bank-account rule requires a nearby context keyword (account/routing number) to hold down false positives on plain digit strings, and still uses justify rather than request_access because RE2 has no lookaround to assert the keyword more strictly — see rule description before enabling in a high-noise environment.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Redact credit card numbers and IBAN codes",
+      "description": "Scans user prompts, tool call inputs, and tool outputs for credit card numbers and International Bank Account Numbers. Redacts matches and allows execution to proceed with the sanitised data.",
+      "action": "redact",
+      "fail_mode": "open",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "pii_redact",
+      "rule_config": {
+        "redaction_categories": ["CREDIT_CARD", "IBAN"],
+        "notify_user": true
+      },
+      "events": ["user_prompt", "pre_tool_use", "post_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely US bank account or routing numbers",
+      "description": "Matches an 8-17 digit number immediately preceded by a bank/routing/account keyword, to avoid firing on bare digit strings (order IDs, phone numbers, invoice numbers). Requires a written reason before the content proceeds — kept at justify rather than request_access because the pattern is still a heuristic (RE2 has no lookaround, so the keyword is captured inline rather than asserted) and shouldn't create an admin-approval bottleneck on false positives.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(bank\\s*account|routing)\\s*(number|no\\.?|#)?\\s*[:#]?\\s*\\d{8,17}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Warn on Bitcoin wallet addresses",
+      "description": "Detects legacy (P2PKH/P2SH) and bech32 Bitcoin address formats. Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\\b",
+          "\\bbc1[a-z0-9]{25,90}\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    }
+  ]
+}

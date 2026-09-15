@@ -1,0 +1,184 @@
+{
+  "id": "government-id-baseline",
+  "name": "Government ID Baseline",
+  "category": "government",
+  "description": "Government-issued identifier hygiene, covering all 12 identifiers from the competitor parity research: redacts US Social Security Numbers and passport numbers, and requires a written reason for likely matches on US ITIN, UK NINO/NHS/passport, Spain NIF, Italy Codice Fiscale, Australia TFN, India PAN/Aadhaar, and Singapore NRIC/FIN. None of the non-US rules validate the real checksum/lookup-table each country actually uses (RE2 can't do modular arithmetic or lookahead-based exclusion lists) — every one of them is a structural/format heuristic, which is why they're all `justify` rather than `redact` or `request_access`: real false positives are expected, especially on the bare-digit-run identifiers (NHS, UK passport, TFN, Aadhaar) which additionally require a nearby context keyword to fire at all.",
+  "version": "2.0.0",
+  "rules": [
+    {
+      "name": "Redact US Social Security Numbers and passport numbers",
+      "description": "Scans user prompts, tool call inputs, and tool outputs for US SSNs and 9-digit US passport numbers. Redacts matches and allows execution to proceed with the sanitised data.",
+      "action": "redact",
+      "fail_mode": "open",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "pii_redact",
+      "rule_config": {
+        "redaction_categories": ["SSN", "PASSPORT"],
+        "notify_user": true
+      },
+      "events": ["user_prompt", "pre_tool_use", "post_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely US Individual Taxpayer ID Numbers (ITIN)",
+      "description": "Matches the ITIN format: 9XX-XX-XXXX where the middle group falls in IRS-assigned ranges (70-88, 90-92, 94-99). No independent context signal beyond the digit shape, so treat as a heuristic with real false-positive potential.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b9\\d{2}[-\\s]?(7[0-9]|8[0-8]|9[0-2]|9[4-9])[-\\s]?\\d{4}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely UK National Insurance Numbers",
+      "description": "Matches the NINO format: 2 letters (excluding D/F/I/Q/U/V as the 1st and D/F/I/O/Q/U/V as the 2nd, per HMRC spec), 6 digits, 1 suffix letter (A-D). Does NOT exclude the further HMRC-reserved letter pairs (BG, GB, NK, KN, TN, NT, ZZ) — RE2 has no lookahead to express that exclusion, so this is looser than the official spec.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[ABCEGHJ-PRSTW-Z][ABCEGHJ-NPRSTW-Z]\\d{6}[A-D]\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely UK NHS numbers",
+      "description": "UK NHS numbers are 10 bare digits with a real Mod-11 checksum RE2 can't validate, and a bare 10-digit heuristic would be far too broad — so this only fires when the digits are immediately preceded by an \"NHS number\"-style keyword.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)nhs\\s*(number|no\\.?|#)?\\s*[:#]?\\s*\\d{3}[-\\s]?\\d{3}[-\\s]?\\d{4}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely UK passport numbers",
+      "description": "UK passport numbers are 9 bare digits with no distinguishing structure, so this only fires when preceded by a \"passport number\"-style keyword — without that anchor a 9-digit heuristic would fire constantly on unrelated numbers.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)passport\\s*(number|no\\.?|#)?\\s*[:#]?\\s*\\d{9}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely Spain personal tax IDs (NIF)",
+      "description": "Matches 8 digits followed by one of the 23 valid Spanish NIF check letters (TRWAGMYFPDXBNJZSQVHLCKE). Does not validate that the letter is the *correct* one for those specific 8 digits (a real mod-23 computation) — only that it's a letter the scheme actually uses.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely Italy personal identification codes (Codice Fiscale)",
+      "description": "Matches the 16-character Codice Fiscale structure: 6 letters, 2-digit year, 1 valid month letter (A-E/H/L/M/P/R/T), 2-digit day, 1 place-code letter, 3 place-code digits, 1 check letter. Format-only — does not validate the check letter's actual computed value.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[A-Z]{6}\\d{2}[A-EHLMPRT]\\d{2}[A-Z]\\d{3}[A-Z]\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely Australia Tax File Numbers (TFN)",
+      "description": "Australian TFNs are 8-9 bare digits with a weighted-mod-11 checksum RE2 can't validate, so this only fires when preceded by a \"TFN\"-style keyword.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 360,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)tfn\\s*(number|no\\.?|#)?\\s*[:#]?\\s*\\d{8,9}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely India Permanent Account Numbers (PAN)",
+      "description": "Matches the PAN structure: 3 letters, 1 holder-type letter from the fixed set (A/B/C/F/G/H/L/J/P/T/K), 1 letter, 4 digits, 1 check letter. Format-only, no checksum validation.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 370,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[A-Z]{3}[ABCFGHLJPTK][A-Z]\\d{4}[A-Z]\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely India Aadhaar numbers",
+      "description": "Matches the Aadhaar shape: 12 digits (optionally grouped 4-4-4), first digit restricted to 2-9 per UIDAI spec. Does not validate the real Verhoeff checksum digit, so still a meaningful false-positive risk on other 12-digit numbers starting 2-9.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 380,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[2-9]\\d{3}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely Singapore NRIC/FIN numbers",
+      "description": "Matches the NRIC/FIN shape: a status letter (S/T for citizens and PRs, F/G for foreign work-pass holders, M for the newer FIN series), 7 digits, 1 check letter. Does not validate the real weighted-checksum table that determines the correct check letter for a given digit string.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 390,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[STFGM]\\d{7}[A-Z]\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

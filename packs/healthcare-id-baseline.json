@@ -1,0 +1,153 @@
+{
+  "id": "healthcare-id-baseline",
+  "name": "Healthcare ID Baseline",
+  "category": "healthcare",
+  "description": "Healthcare identifier and content hygiene, covering all 9 rules identified in the competitor parity research. Three tiers of confidence, reflected in the actions used: (1) Medicare Beneficiary Identifier gets request_access — a tight, CMS-published format; (2) NPI and medical license numbers get justify — real identifiers but with no way to validate them precisely by pattern alone; (3) the six semantic categories (disease/medication/treatment/clinical-event/biological-attribute/family-history) get warn only — these are coarse keyword/suffix heuristics standing in for what the competitor does with an NER model or LLM judge, not equivalent detection. Expect real false positives and real misses on tier 3; treat it as a starting point, not compliance-grade coverage. See docs/speakeasy-parity-gap-analysis.md for the full reasoning.",
+  "version": "2.0.0",
+  "rules": [
+    {
+      "name": "Require access request for likely Medicare Beneficiary Identifiers (MBI)",
+      "description": "Matches the CMS Medicare Beneficiary Identifier format: 11 characters at fixed alphanumeric positions, using only letters that exclude visually-ambiguous S/L/O/I/B/Z, with numeric-only positions 4, 7, 10, and 11 (e.g. 1EG4-TE5-MK73, hyphens optional). Requires admin approval before proceeding.",
+      "action": "request_access",
+      "fail_mode": "open",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b[1-9][ACDEFGHJKMNPQRTUVWXY][ACDEFGHJKMNPQRTUVWXY0-9][0-9][-\\s]?[ACDEFGHJKMNPQRTUVWXY][ACDEFGHJKMNPQRTUVWXY0-9][0-9][-\\s]?[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{2}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for likely US National Provider Identifiers (NPI)",
+      "description": "NPIs are 10 digits with a Luhn-style check digit computed against a fixed \"80840\" prefix — RE2 cannot compute that checksum, and a bare 10-digit pattern would match almost anything (phone numbers, zip+4 strings). Only fires when the digits are immediately preceded by an \"NPI\"-style keyword, and even then expect false positives.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 210,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(npi|national provider identifier)\\s*(number|no\\.?|#)?\\s*[:#]?\\s*\\d{10}\\b"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for mentions of medical license numbers",
+      "description": "There is no single public format for a \"medical license number\" — it varies by US state licensing board, and the competitor doesn't reveal what specific pattern(s) it matches. This rule only catches the phrase itself (\"medical license\" / \"license number\") followed by an alphanumeric token — closer to a keyword flag than an identifier match. Treat as a placeholder pending real requirements from a customer that needs this.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 220,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(medical license|license number)\\s*[:#]?\\s*[A-Za-z0-9-]{4,}"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Warn on disease or disorder mentions",
+      "description": "Coarse keyword list of common disease/disorder names (diabetes, cancer, HIV, depression, etc.). This is NOT clinical NER — it will miss most real mentions (any condition not on the list, any phrasing variant) and can false-positive on non-clinical uses of these words (a \"cancer\" support-group Slack bot, a security \"HIV\"-named test fixture, etc.). Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 500,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(diabetes|hypertension|cancer|oncology|hiv|aids|depression|anxiety disorder|schizophrenia|bipolar disorder|copd|asthma|epilepsy|alzheimer|parkinson|leukemia|tuberculosis|hepatitis)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    },
+    {
+      "name": "Warn on medication or drug name mentions",
+      "description": "Suffix-based heuristic (-cillin, -mycin, -statin, -pril, -mab, etc. — common pharmaceutical naming conventions), not a drug name database. Will miss most specific drug names and can false-positive on non-drug words sharing a suffix. Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 510,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\w*(?:cillin|mycin|azole|statin|olol|pril|sartan|oxetine|azepam|codone|caine|dipine|profen|mab|nib|vir)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    },
+    {
+      "name": "Warn on treatment or diagnostic procedure mentions",
+      "description": "Coarse keyword list of common procedures (biopsy, chemotherapy, MRI/CT scan, dialysis, transplant, etc.). Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 520,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(biopsy|chemotherapy|radiation therapy|dialysis|mri scan|ct scan|x-ray|colonoscopy|endoscopy|angioplasty|bypass surgery|transplant)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    },
+    {
+      "name": "Warn on clinical event phrasing",
+      "description": "Matches phrasing that typically introduces a clinical event (\"diagnosed with\", \"admitted for\", \"prescribed\", etc.) rather than any specific medical fact. Very coarse — will fire on plenty of non-clinical uses of the same phrasing. Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 530,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(diagnosed with|admitted for|discharged from|prescribed|underwent surgery|hospitalized for)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    },
+    {
+      "name": "Warn on biological attribute or measurement mentions",
+      "description": "Coarse keyword list for common vitals/lab-result phrasing (blood pressure, blood type, BMI, heart rate, blood glucose). Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 540,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(blood pressure|blood type\\s*[oab][+-]?|body mass index|heart rate|blood glucose level)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    },
+    {
+      "name": "Warn on family medical history references",
+      "description": "Matches common family-history phrasing (\"family history of\", \"mother had\", \"hereditary condition\", etc.). Logs a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 550,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(family history of|mother (had|was diagnosed)|father (had|was diagnosed)|sibling (had|was diagnosed)|hereditary condition)\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    }
+  ]
+}

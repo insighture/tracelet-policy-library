@@ -228,6 +228,8 @@ version in both the pack file and `index.json`.
 
 ## Category set
 
-`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system`
+`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system` · `pii` · `financial` · `government` · `healthcare`
 
-The dashboard's category filter and icon maps (`governance.policy.tool-policies.tsx` in the tracelet repo) must list every category used here.
+`pii`, `financial`, `government`, and `healthcare` are detection-based (not destructive-command) categories: they redact or flag sensitive data at rest in prompts/tool calls/outputs rather than blocking destructive operations. `payment` (destructive CLI against payment *provider* APIs — Stripe/Braintree/Square) and `financial` (detecting financial *data* — card numbers, IBANs, bank accounts) are deliberately separate; don't conflate them when adding new packs.
+
+The dashboard's category filter and icon maps (`policy-packs.tsx` under `dashboard/app/components/policy/` in the tracelet repo — not `governance.policy.tool-policies.tsx`, which is a different route file) must list every category used here. As of this writing that dashboard-side update has not been applied for the 4 categories added in this pack set; see `docs/speakeasy-parity-gap-analysis.md`.

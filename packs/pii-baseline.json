@@ -1,0 +1,41 @@
+{
+  "id": "pii-baseline",
+  "name": "PII Baseline",
+  "category": "pii",
+  "description": "Personal identifiable information hygiene: redacts email addresses, phone numbers, and IP addresses out of prompts, tool inputs, and tool outputs before they reach AI context, and flags MAC address exposure for a written reason. Uses detection-based rules with fail-mode open to minimise false-positive disruption.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Redact email addresses, phone numbers, and IP addresses",
+      "description": "Scans user prompts, tool call inputs, and tool outputs for email addresses, phone numbers, and IPv4/IPv6 addresses. Redacts matches and allows execution to proceed with the sanitised data.",
+      "action": "redact",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 100,
+      "rule_type": "pii_redact",
+      "rule_config": {
+        "redaction_categories": ["EMAIL", "PHONE", "IP_ADDRESS"],
+        "notify_user": true
+      },
+      "events": ["user_prompt", "pre_tool_use", "post_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for MAC address exposure",
+      "description": "Detects hardware (MAC) addresses in colon- or hyphen-separated form. Requires a written reason before proceeding — MAC_ADDRESS is not yet a supported pii_redact category, so this cannot auto-redact until that lands.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\\b",
+          "\\b([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}\\b"
+        ]
+      },
+      "events": [],
+      "tools": null
+    }
+  ]
+}

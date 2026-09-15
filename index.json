@@ -368,6 +368,46 @@
       "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
       "version": "1.0.0",
       "rule_count": 7
+    },
+    {
+      "id": "pii-baseline",
+      "name": "PII Baseline",
+      "category": "pii",
+      "description": "Redacts email addresses, phone numbers, and IP addresses out of prompts, tool inputs, and tool outputs, and requires a written reason for MAC address exposure.",
+      "version": "1.0.0",
+      "rule_count": 2
+    },
+    {
+      "id": "financial-baseline",
+      "name": "Financial Information Baseline",
+      "category": "financial",
+      "description": "Redacts credit card numbers and IBAN codes, requires a written reason for likely US bank account numbers, and flags Bitcoin wallet addresses.",
+      "version": "1.0.0",
+      "rule_count": 3
+    },
+    {
+      "id": "government-id-baseline",
+      "name": "Government ID Baseline",
+      "category": "government",
+      "description": "Redacts US SSNs and passport numbers, and requires a written reason for likely matches on ITIN, UK NINO/NHS/passport, Spain NIF, Italy Codice Fiscale, Australia TFN, India PAN/Aadhaar, and Singapore NRIC/FIN — all 12 identifiers from the parity research. Non-US rules are format heuristics only, no checksum validation.",
+      "version": "2.0.0",
+      "rule_count": 11
+    },
+    {
+      "id": "healthcare-id-baseline",
+      "name": "Healthcare ID Baseline",
+      "category": "healthcare",
+      "description": "Covers all 9 healthcare rules from the parity research at 3 confidence tiers: request_access for Medicare Beneficiary Identifiers (precise format), justify for NPI and medical license mentions (imprecise), warn-only for 6 keyword-heuristic semantic categories (disease/medication/treatment/clinical-event/biological-attribute/family-history) standing in for NER/LLM-grade detection.",
+      "version": "2.0.0",
+      "rule_count": 9
+    },
+    {
+      "id": "secrets-coverage-gap-guard",
+      "name": "Secrets Coverage Gap Guard",
+      "category": "secrets",
+      "description": "Supplements the embedded gitleaks ruleset with 9 named secret types confirmed missing from it via a full diff against the competitor's 222-rule catalog — notably Anthropic API keys. Also flags PKCS #12 credential files. See pack description for the ~16 gaps deliberately left uncovered and why.",
+      "version": "1.0.0",
+      "rule_count": 3
     }
   ]
 }

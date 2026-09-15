@@ -1,0 +1,44 @@
+{
+  "_status": "DRAFT — NOT INSTALLABLE. Deliberately kept out of packs/ and index.json.",
+  "_why": "This pack's rules are opa/Rego and reference input.event.provider_account_email, which the agent's own event schema already carries (agent/internal/events/types.go, EventRecord.ProviderAccountEmail, populated on KindSessionStart for tools with a reliably-available local signal -- see agent/internal/sources/provideraccount) but which is NOT currently exposed to Rego policy evaluation. Both Rego input builders would need the same one-line addition: agent/internal/policy/opa/rule.go's buildRegoInput() and agent/internal/policy/opa/engine.go's regoInput() -- CLAUDE.md's 'two orchestrators' warning applies here too; a fix to only one leaves the other scenario silently evaluating against an empty string. Until that lands, every rule below always evaluates false (the config's approved_domains check never fires, and personal_account never matches) -- installing this pack today would create a policy group that looks active but never fires, which is worse than not installing it at all.",
+  "_verified": "The Rego in both rules below was actually compiled AND evaluated (not just hand-written), via a throwaway scratch package under agent/cmd/ that was deleted immediately after -- 7 cases covering fire/no-fire/edge cases (empty allowlist, missing email signal, non-session_start event) all passed. Caught my own mistake in the process: agent/internal/policy/opa/rule.go imports the OLD `github.com/open-policy-agent/opa/rego` path (not `.../opa/v1/rego`), which parses Rego in v0 mode by default -- an `if`-keyword v1-style first draft of this Rego compiled fine against the newer `/v1/rego` import but FAILED against the actual import this codebase uses (`rego_parse_error: var cannot be used for rule name`). The Rego below is the corrected v0-style version (`match { ... }`, no `if`, `=` for assignment, `arr[_]` indexing) verified against the real import path -- matches agent/internal/policy/opa/rule_test.go's own existing example style.",
+  "id": "non-corporate-accounts-baseline",
+  "name": "Non-Corporate Accounts Baseline (DRAFT)",
+  "category": "identity",
+  "description": "Flags sessions authenticated with a personal AI-provider account, or an email domain outside an approved allowlist. Mirrors the competitor's 2-rule 'Non-Corporate Accounts' category. Both rules use the opa rule_type since this is genuinely session/identity-scoped, not content/command-scoped -- no existing non-Rego rule_type can express it, but no NEW rule_type is needed either, since opa/Rego can already reference input.config (the rule_config below) and would be able to reference input.event.provider_account_email once that field is wired in.",
+  "version": "0.1.0-draft",
+  "rules": [
+    {
+      "name": "Require justification for personal AI-provider accounts",
+      "description": "Flags a session_start event whose provider_account_email domain matches a known personal-email-provider domain (gmail.com, outlook.com, hotmail.com, yahoo.com, icloud.com, protonmail.com, aol.com -- adjust via rule_config.personal_domains). Requires a written reason before the session's activity is treated as trusted.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 100,
+      "rule_type": "opa",
+      "rule_config": {
+        "personal_domains": ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com", "protonmail.com", "aol.com"],
+        "rego": "package tracelet.agent\n\ndomain_parts = split(input.event.provider_account_email, \"@\")\n\nmatch {\n\tinput.event.normalized_kind == \"session_start\"\n\tinput.event.provider_account_email != \"\"\n\tcount(domain_parts) == 2\n\tdomain_parts[1] == input.config.personal_domains[_]\n}\n",
+        "query": "data.tracelet.agent.match"
+      },
+      "events": ["session_start"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for AI-provider accounts outside the approved domain list",
+      "description": "Flags a session_start event whose provider_account_email domain is NOT in rule_config.approved_domains. Until at least one domain is configured, this rule cannot fire (an empty allow-list means nothing is 'outside' it) -- mirrors the competitor's own stated behaviour for this rule. Requires a written reason before the session's activity is treated as trusted.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 110,
+      "rule_type": "opa",
+      "rule_config": {
+        "approved_domains": [],
+        "rego": "package tracelet.agent\n\ndomain_parts = split(input.event.provider_account_email, \"@\")\n\nis_approved {\n\tcount(domain_parts) == 2\n\tdomain_parts[1] == input.config.approved_domains[_]\n}\n\nmatch {\n\tinput.event.normalized_kind == \"session_start\"\n\tinput.event.provider_account_email != \"\"\n\tcount(domain_parts) == 2\n\tcount(input.config.approved_domains) > 0\n\tnot is_approved\n}\n",
+        "query": "data.tracelet.agent.match"
+      },
+      "events": ["session_start"],
+      "tools": null
+    }
+  ]
+}
