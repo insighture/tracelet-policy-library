@@ -1,0 +1,175 @@
+{
+  "id": "aws-account-identity-guard",
+  "name": "AWS Account Identity Guard",
+  "category": "aws",
+  "description": "Declared-profile vs. actual-account safety: destructive operations under a prod profile need admin approval, profile switches via AWS_PROFILE, inline static credentials and local profile rewrites need a written reason, destructive commands on ambient credentials draw a warning, and identity checks / cross-account role assumptions are logged for the cross-account exposure report.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for destructive AWS operations under a prod profile",
+      "description": "A delete/terminate/disable operation with --profile <...prod...> or AWS_PROFILE=<...prod...> is a production change. Requires admin approval. Instead: run it against staging first with an explicit --profile, or request a keycard for the production run.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)aws\\b[^|;&]*--profile[=\\s]+[\\\"']?\\S*prod[^|;&]*\\b(?:terminate-instances|delete-[a-z-]+|batch-delete-[a-z-]+|remove-[a-z-]+|s3\\s+rb|s3\\s+rm|schedule-key-deletion|stop-logging|disable-[a-z-]+|deregister-[a-z-]+|purge-queue|reboot-[a-z-]+|stop-[a-z-]+|modify-db-[a-z-]+|update-stack|execute-change-set|put-bucket-policy|put-bucket-acl)\\b",
+          "(?i)aws\\b[^|;&]*\\b(?:terminate-instances|delete-[a-z-]+|batch-delete-[a-z-]+|remove-[a-z-]+|s3\\s+rb|s3\\s+rm|schedule-key-deletion|stop-logging|disable-[a-z-]+|deregister-[a-z-]+|purge-queue|reboot-[a-z-]+|stop-[a-z-]+|modify-db-[a-z-]+|update-stack|execute-change-set|put-bucket-policy|put-bucket-acl)\\b[^|;&]*--profile[=\\s]+[\\\"']?\\S*prod",
+          "(?i)AWS_PROFILE=[\\\"']?\\S*prod[^|;&]*\\baws\\b[^|;&]*\\b(?:terminate-instances|delete-[a-z-]+|batch-delete-[a-z-]+|remove-[a-z-]+|s3\\s+rb|s3\\s+rm|schedule-key-deletion|stop-logging|disable-[a-z-]+|deregister-[a-z-]+|purge-queue|reboot-[a-z-]+|stop-[a-z-]+|modify-db-[a-z-]+|update-stack|execute-change-set|put-bucket-policy|put-bucket-acl)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request to assume the root session of a member account",
+      "description": "sts assume-root grants root-level access to a member account for privileged tasks. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bsts\\s+assume-root\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to select a prod profile through the environment",
+      "description": "AWS_PROFILE=<...prod...> as a command prefix or an export switches every following command to production without the --profile flag that other rules key on. Requires a written reason. Instead: pass --profile explicitly on each production command so intent is visible in the audit trail.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:^|[\\s;&|])(?:export\\s+)?AWS_PROFILE=[\\\"']?\\S*prod"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for inline static AWS credentials",
+      "description": "AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_SESSION_TOKEN set on the command line bypass named profiles, so nobody can tell which account the command hits. Requires a written reason. Instead: aws configure sso or a named profile.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[\\s;&|])(?:export\\s+)?AWS_(?:ACCESS_KEY_ID|SECRET_ACCESS_KEY|SESSION_TOKEN)=\\S+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to rewrite local AWS profile configuration",
+      "description": "aws configure set / import rewrite ~/.aws/config and ~/.aws/credentials — the mapping from a profile name like 'staging' to an actual account. A wrong edit is how a 'staging' profile ends up pointing at production. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\s+configure\\s+(?:set\\b|import\\b)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on destructive AWS operations that rely on ambient credentials",
+      "description": "A delete/terminate/disable command with no --profile (and no AWS_PROFILE prefix) runs against whatever the default credential chain resolves to — the classic wrong-account incident. Records a warning. Instead: add --profile <name> and run aws sts get-caller-identity first.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:terminate-instances|delete-[a-z-]+|batch-delete-[a-z-]+|remove-[a-z-]+|s3\\s+rb|s3\\s+rm|schedule-key-deletion|stop-logging|disable-[a-z-]+|deregister-[a-z-]+|purge-queue|reboot-[a-z-]+|stop-[a-z-]+|modify-db-[a-z-]+|update-stack|execute-change-set|put-bucket-policy|put-bucket-acl)\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*--profile[=\\s]+[^\\s;&|]+[^|;&]*$",
+          "AWS_PROFILE=[^\\s;&|]+[^|;&]*\\baws\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cross-account role assumption",
+      "description": "sts assume-role crosses an account boundary; recording it is what the cross-account exposure report is built from. Records a warning without blocking.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bsts\\s+assume-role\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Log identity checks before AWS actions",
+      "description": "aws sts get-caller-identity is the developer verifying which account they are in. Logging it gives the account-identity check its evidence trail. Does not block or warn.",
+      "action": "log",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bsts\\s+get-caller-identity\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

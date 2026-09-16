@@ -1,0 +1,307 @@
+{
+  "id": "aws-iam-least-privilege-guard",
+  "name": "AWS IAM Least-Privilege Guard",
+  "category": "aws",
+  "description": "IAM policy-widening guard: catches an AI agent 'fixing' an AccessDenied by attaching admin-equivalent policies, writing wildcard actions/resources/principals, removing permissions boundaries or Organizations policies, or granting cluster-admin — on the CLI and in IaC files at write time. Admin-equivalent grants need admin approval; service-wide wildcards need a written reason with a least-privilege alternative suggested.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request to attach AdministratorAccess, PowerUserAccess or IAMFullAccess",
+      "description": "Attaching an admin-equivalent AWS managed policy is the fastest way an AI agent 'fixes' an AccessDenied error, and it silently hands the principal the whole account. Requires admin approval. Instead: find the exact action in the error message and grant only that action on the specific resource ARN.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+attach-(?:user|role|group)-policy\\b[^|;&]*policy/(?:AdministratorAccess|PowerUserAccess|IAMFullAccess)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for IAM policy documents with wildcard or privilege-escalation actions",
+      "description": "put-*-policy, create-policy and create-policy-version with \"Action\": \"*\", \"*:*\", or iam:*/sts:*/organizations:* grant the ability to grant anything. Requires admin approval. Instead: list the specific actions (s3:GetObject, s3:PutObject) the task actually performs.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version)\\b.*\\\\?\"Action\\\\?\"\\s*:\\s*(?:\\\\?\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\\\\?\"|\\[[^\\]]*\\\\?\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\\\\?\")",
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version)\\b.*\\\\?\"NotAction\\\\?\"\\s*:"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request for role trust policies that allow any principal",
+      "description": "A trust policy with \"Principal\": \"*\" (or \"AWS\": \"*\") lets any AWS account assume the role. Requires admin approval. Instead: name the exact account ID, role ARN or service principal that needs to assume it.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:update-assume-role-policy|create-role)\\b.*\\\\?\"Principal\\\\?\"\\s*:\\s*(?:\\\\?\"\\*\\\\?\"|\\{\\s*\\\\?\"AWS\\\\?\"\\s*:\\s*\\\\?\"\\*\\\\?\")"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request to remove a permissions boundary",
+      "description": "Deleting a permissions boundary removes the ceiling that caps what a role or user can ever be granted. Requires admin approval. Instead: adjust the boundary policy to include the missing action.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+delete-(?:role|user)-permissions-boundary\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request to detach, delete or disable AWS Organizations policies",
+      "description": "Service control policies and other Organizations policies are the account-level guardrails. Detaching, deleting or disabling a policy type widens every principal in the OU at once. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\borganizations\\s+(?:detach-policy|delete-policy|disable-policy-type)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request to add a user to an admin group",
+      "description": "Membership in an admin-named IAM group is standing privilege. Requires admin approval. Instead: request a time-boxed keycard for the specific action.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)aws\\b[^|;&]*\\biam\\s+add-user-to-group\\b[^|;&]*--group-name[=\\s]+[\\\"']?\\S*admin"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to attach a *FullAccess managed policy",
+      "description": "Service-level FullAccess policies (AmazonS3FullAccess, AmazonEC2FullAccess, ...) grant every action on every resource of that service. Requires a written reason. Instead: write a customer-managed policy with the actions the workload uses, scoped to an ARN prefix (arn:aws:s3:::team-bucket-*).",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+attach-(?:user|role|group)-policy\\b[^|;&]*policy/[A-Za-z0-9]+FullAccess\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for policy documents with service-wide wildcards or Resource \"*\"",
+      "description": "\"Action\": \"s3:*\" or \"Resource\": \"*\" on a write statement is broader than the task needs and is the typical shape of an AI 'fix'. Requires a written reason. Instead: use explicit actions and a prefix-plus-wildcard ARN so renamed resources keep matching without granting everything.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version)\\b.*\\\\?\"Action\\\\?\"\\s*:\\s*(?:\\\\?\"[a-z0-9-]+:\\*\\\\?\"|\\[[^\\]]*\\\\?\"[a-z0-9-]+:\\*\\\\?\")",
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version)\\b.*\\\\?\"Resource\\\\?\"\\s*:\\s*(?:\\\\?\"\\*\\\\?\"|\\[[^\\]]*\\\\?\"\\*\\\\?\")"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to assume an admin-named role",
+      "description": "Assuming a role whose name contains 'admin' escalates the session to standing privilege for the task. Requires a written reason so the standing-privilege rollup can attribute it.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)aws\\b[^|;&]*\\bsts\\s+assume-role\\b[^|;&]*--role-arn[=\\s]+[\\\"']?\\S*admin"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to grant EKS cluster-admin access",
+      "description": "Associating AmazonEKSClusterAdminPolicy (or ClusterAdmin scope) with an access entry gives the principal full control of the cluster. Requires a written reason. Instead: use a namespace-scoped access policy.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\beks\\s+(?:associate-access-policy|create-access-entry)\\b[^|;&]*(?:AmazonEKSClusterAdminPolicy|AmazonEKSAdminPolicy)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to create IAM users or long-lived console passwords",
+      "description": "New IAM users and console login profiles are long-lived identities that outlive the task that created them. Requires a written reason. Instead: use an IAM role or IAM Identity Center for people and workloads.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+(?:create-user|create-login-profile)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to switch the default version of an IAM policy",
+      "description": "set-default-policy-version silently swaps the live permissions to another stored version, which may be broader than the current one. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+set-default-policy-version\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when an IAM policy document is passed from a file",
+      "description": "A policy document loaded with file:// cannot be inspected on the command line. Records a warning so the file is reviewed. The write-time rules in this pack catch wildcard grants when the agent authors the file itself.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version|update-assume-role-policy|create-role)\\b[^|;&]*--(?:policy-document|assume-role-policy-document)[=\\s]+[\\\"']?\\s*(?:file|fileb)://"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request when an admin-equivalent IAM grant is written to a file",
+      "description": "Inspects the content the AI tool is about to write (Terraform, CloudFormation, CDK, IAM JSON) for \"Action\": \"*\", iam:*/sts:*/organizations:*, a wildcard principal, or the AdministratorAccess/PowerUserAccess/IAMFullAccess ARNs. Requires admin approval. Instead: enumerate the actions the workload needs.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 400,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ntool_input := ti if {\n\tti := object.get(input.event, [\"raw_json\", \"tool_input\"], {})\n\tis_object(ti)\n}\n\ndefault tool_input := {}\n\ncandidate_texts contains t if {\n\tsome k in [\"content\", \"new_string\", \"new_str\", \"text\", \"code\", \"contents\"]\n\tt := object.get(tool_input, k, \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tsome e in object.get(tool_input, \"edits\", [])\n\tis_object(e)\n\tt := object.get(e, \"new_string\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tt := object.get(input.event, \"command_text\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\nscan_text := concat(\"\\n\", [t | some t in candidate_texts])\n\nfile_path := object.get(input.event, \"file_path\", \"\")\n\n# Admin-equivalent grants: Action \"*\" / \"*:*\" / privilege-escalation services\n# (iam, sts, organizations) with a wildcard, or the AdministratorAccess /\n# PowerUserAccess / IAMFullAccess managed policies — in JSON, HCL and CFN YAML.\nadmin_patterns := [\n\t`(?i)\"Action\"\\s*:\\s*\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\"`,\n\t`(?i)\"Action\"\\s*:\\s*\\[[^\\]]*\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\"`,\n\t`(?i)\"NotAction\"\\s*:`,\n\t`(?i)\\bactions?\\s*=\\s*\\[?\\s*\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\"`,\n\t`(?im)^\\s*-?\\s*Action\\s*:\\s*['\"]?(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)['\"]?\\s*$`,\n\t`(?im)^\\s*Action\\s*:\\s*$\\n\\s*-\\s*['\"]?(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)['\"]?\\s*$`,\n\t`arn:aws[a-z-]*:iam::aws:policy/(?:AdministratorAccess|PowerUserAccess|IAMFullAccess)\\b`,\n\t`(?i)\"Principal\"\\s*:\\s*(?:\"\\*\"|\\{\\s*\"AWS\"\\s*:\\s*\"\\*\")`,\n\t`(?i)\\bprincipals?\\s*\\{[^}]*identifiers\\s*=\\s*\\[\\s*\"\\*\"`,\n]\n\nmatched if {\n\tscan_text != \"\"\n\tsome p in admin_patterns\n\tregex.match(p, scan_text)\n}\n\nreason := sprintf(\"Admin-equivalent IAM grant (wildcard action, wildcard principal, or Administrator/PowerUser/IAMFullAccess) written to %s — scope the policy to the specific actions and ARN prefixes the workload needs\", [display_path]) if {\n\tmatched\n}\n\ndisplay_path := file_path if { file_path != \"\" }\ndisplay_path := \"the command\" if { file_path == \"\" }\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": null
+    },
+    {
+      "name": "Require justification when a service-wide wildcard or Resource \"*\" is written to a file",
+      "description": "Inspects the content the AI tool is about to write for s3:*-style actions, a bare Resource \"*\", or a *FullAccess managed policy ARN. Requires a written reason. Instead: explicit actions plus an ARN prefix with a trailing wildcard.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 410,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ntool_input := ti if {\n\tti := object.get(input.event, [\"raw_json\", \"tool_input\"], {})\n\tis_object(ti)\n}\n\ndefault tool_input := {}\n\ncandidate_texts contains t if {\n\tsome k in [\"content\", \"new_string\", \"new_str\", \"text\", \"code\", \"contents\"]\n\tt := object.get(tool_input, k, \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tsome e in object.get(tool_input, \"edits\", [])\n\tis_object(e)\n\tt := object.get(e, \"new_string\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tt := object.get(input.event, \"command_text\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\nscan_text := concat(\"\\n\", [t | some t in candidate_texts])\n\nfile_path := object.get(input.event, \"file_path\", \"\")\n\n# Service-wide action wildcards (s3:*, ec2:*, ...) or a bare Resource \"*\" on\n# a statement — broader than the task needs. Read-only wildcards\n# (Describe*/Get*/List*) are deliberately not matched.\nwide_patterns := [\n\t`(?i)\"Action\"\\s*:\\s*\"[a-z0-9-]+:\\*\"`,\n\t`(?i)\"Action\"\\s*:\\s*\\[[^\\]]*\"[a-z0-9-]+:\\*\"`,\n\t`(?i)\\bactions?\\s*=\\s*\\[?\\s*\"[a-z0-9-]+:\\*\"`,\n\t`(?im)^\\s*-?\\s*Action\\s*:\\s*['\"]?[a-z0-9-]+:\\*['\"]?\\s*$`,\n\t`(?i)\"Resource\"\\s*:\\s*\"\\*\"`,\n\t`(?i)\"Resource\"\\s*:\\s*\\[[^\\]]*\"\\*\"`,\n\t`(?i)\\bresources?\\s*=\\s*\\[?\\s*\"\\*\"`,\n\t`(?im)^\\s*-?\\s*Resource\\s*:\\s*['\"]?\\*['\"]?\\s*$`,\n\t`arn:aws[a-z-]*:iam::aws:policy/[A-Za-z0-9]+FullAccess\\b`,\n]\n\n# The admin-equivalent shapes are handled by the request_access rule; skip\n# them here so one write does not raise two prompts.\nadmin_shape if {\n\tregex.match(`(?i)\"Action\"\\s*:\\s*\"(?:\\*|\\*:\\*|(?:iam|sts|organizations):\\*)\"`, scan_text)\n}\n\nmatched if {\n\tscan_text != \"\"\n\tnot admin_shape\n\tsome p in wide_patterns\n\tregex.match(p, scan_text)\n}\n\nreason := sprintf(\"Service-wide action wildcard, bare Resource \\\"*\\\", or a *FullAccess managed policy written to %s — prefer explicit actions and an ARN prefix with a trailing wildcard (arn:aws:s3:::team-bucket-*) so renamed resources keep matching without granting everything\", [display_path]) if {\n\tmatched\n}\n\ndisplay_path := file_path if { file_path != \"\" }\ndisplay_path := \"the command\" if { file_path == \"\" }\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": null
+    }
+  ]
+}

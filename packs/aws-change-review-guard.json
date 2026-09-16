@@ -1,0 +1,279 @@
+{
+  "id": "aws-change-review-guard",
+  "name": "AWS Change Review Guard",
+  "category": "infrastructure",
+  "description": "Plan-before-apply discipline for Terraform, CloudFormation and CDK: applies without a reviewed plan or change set, targeted/replace applies, lock and refresh bypasses, IAM-capability stacks, rollback and stack-policy overrides, and CDK hotswap need a written reason; removing termination protection needs admin approval; plan and change-set generation is logged as review evidence. Complements Terraform Baseline (which gates apply/destroy outright).",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request to remove CloudFormation termination protection",
+      "description": "Disabling termination protection is the step before deleting a protected stack. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+update-termination-protection\\b[^|;&]*--no-enable-termination-protection\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to apply Terraform without a reviewed plan file",
+      "description": "terraform apply with no saved plan re-plans and applies in one step, so what runs was never reviewed. Requires a written reason. Instead: terraform plan -out=tfplan, review it, then terraform apply tfplan.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b[^|;&]*\\bapply\\b"
+        ],
+        "allowed_patterns": [
+          "(?:terraform|tofu)\\b[^|;&]*\\bapply\\b(?:\\s+-\\S+)*\\s+[\\\"']?[^-\\s\\\"'][^\\s;&|\\\"']*[\\\"']?\\s*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for targeted or replace applies",
+      "description": "-target and -replace skip the full plan, so dependent resources are changed without being reviewed. Requires a written reason. Instead: apply the full plan, or split the change into its own module.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b[^|;&]*\\b(?:apply|plan)\\b[^|;&]*\\s-(?:target|replace)[=\\s]"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to bypass state locking or refresh",
+      "description": "-lock=false risks concurrent writes to the same state; -refresh=false plans against stale state. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b[^|;&]*\\b(?:apply|plan|destroy)\\b[^|;&]*\\s-(?:lock|refresh)=false\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to select a prod Terraform workspace",
+      "description": "Switching to a workspace named prod points every following plan/apply at production. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:terraform|tofu)\\b[^|;&]*\\bworkspace\\s+select\\s+[\\\"']?\\S*prod"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to create or update CloudFormation stacks without a change set",
+      "description": "create-stack / update-stack apply immediately; nobody sees the diff. Requires a written reason. Instead: create-change-set, review with describe-change-set, then execute-change-set.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+(?:create-stack|update-stack)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cloudformation deploy that executes its change set immediately",
+      "description": "aws cloudformation deploy creates and executes the change set in one step unless --no-execute-changeset is passed. Requires a written reason. Instead: deploy --no-execute-changeset, review, then execute-change-set.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+deploy\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+deploy\\b[^|;&]*--no-execute-changeset\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to execute a CloudFormation change set",
+      "description": "execute-change-set is the moment the reviewed change is applied. Requires a written reason that names who reviewed the change set.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+execute-change-set\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for stacks that create or expand IAM resources",
+      "description": "CAPABILITY_IAM / CAPABILITY_NAMED_IAM / CAPABILITY_AUTO_EXPAND acknowledge that the template creates IAM principals or runs macros. Requires a written reason so the IAM changes are reviewed with the plan.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\b[^|;&]*--capabilities[=\\s]+[\\\"']?[^;&|]*CAPABILITY_(?:NAMED_IAM|IAM|AUTO_EXPAND)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to disable rollback or override the stack policy",
+      "description": "--disable-rollback / --on-failure DO_NOTHING leave a failed stack half-applied; --stack-policy-during-update-body and set-stack-policy lift the protections on critical resources. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 280,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\b[^|;&]*(?:--disable-rollback\\b|--on-failure[=\\s]+DO_NOTHING\\b|--stack-policy-during-update-(?:body|url)\\b)",
+          "aws\\b[^|;&]*\\bcloudformation\\s+set-stack-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for CDK hotswap or deploy-all",
+      "description": "cdk deploy --hotswap bypasses CloudFormation (no change set, no rollback); --all or '*' deploys every stack in the app at once. Requires a written reason. Instead: cdk diff <stack>, then cdk deploy <stack>.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 290,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcdk\\s+deploy\\b[^|;&]*(?:--hotswap(?:-fallback)?\\b|--all\\b|\\s[\\\"']?\\*[\\\"']?(?:\\s|$))"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on cancelled or resumed stack updates",
+      "description": "cancel-update-stack and continue-update-rollback are recovery steps that leave resources in a mixed state. Records a warning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudformation\\s+(?:cancel-update-stack|continue-update-rollback)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Log plan and change-set generation as review evidence",
+      "description": "terraform plan, cdk diff, create-change-set and describe-change-set are the review step. Logging them gives the plan-before-apply control its evidence that a plan existed before the apply. Does not block or warn.",
+      "action": "log",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:terraform|tofu)\\b[^|;&]*\\bplan\\b",
+          "\\bcdk\\s+diff\\b",
+          "\\bpulumi\\s+preview\\b",
+          "aws\\b[^|;&]*\\bcloudformation\\s+(?:create-change-set|describe-change-set)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

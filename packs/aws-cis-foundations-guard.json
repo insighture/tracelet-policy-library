@@ -1,0 +1,674 @@
+{
+  "id": "aws-cis-foundations-guard",
+  "name": "AWS CIS Foundations Guard",
+  "category": "aws",
+  "description": "Named compliance bundle mapped to the CIS AWS Foundations Benchmark v3.0 (IAM, Storage, Logging, Monitoring, Networking sections) plus a few AWS Foundational Security Best Practices controls. Every rule name carries its control ID so the installed group doubles as the coverage evidence for audits and security questionnaires. Control-removing operations need admin approval; control-weakening ones need a written reason; hygiene gaps draw a warning.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "[CIS 1.10] Require access request to deactivate or delete an MFA device",
+      "description": "CIS AWS Foundations 1.10: MFA must be enabled for all IAM users with a console password. Deactivating or deleting an MFA device removes it. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+(?:deactivate-mfa-device|delete-virtual-mfa-device)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.8/1.9] Require access request to delete the account password policy",
+      "description": "CIS 1.8 (minimum length 14) and 1.9 (password reuse prevention) depend on the account password policy existing. Deleting it reverts to AWS defaults. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+delete-account-password-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.8/1.9] Require justification to weaken the account password policy",
+      "description": "Setting --minimum-password-length below 14 or --password-reuse-prevention below 24 fails CIS 1.8 / 1.9. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+update-account-password-policy\\b[^|;&]*--minimum-password-length[=\\s]+[\\\"']?(?:[0-9]|1[0-3])\\b",
+          "aws\\b[^|;&]*\\biam\\s+update-account-password-policy\\b[^|;&]*--password-reuse-prevention[=\\s]+[\\\"']?(?:[0-9]|1\\d|2[0-3])\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.16] Require access request to attach full administrative privileges",
+      "description": "CIS 1.16: no IAM policy should allow full \"*:*\" administrative privileges. Attaching AdministratorAccess or writing an Action \"*\" policy document fails it. Requires admin approval. The AWS IAM Least-Privilege Guard pack covers this in more depth.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 130,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+attach-(?:user|role|group)-policy\\b[^|;&]*policy/AdministratorAccess\\b",
+          "(?is)aws\\b[^|;&]*\\biam\\s+(?:put-(?:user|role|group)-policy|create-policy|create-policy-version)\\b.*\\\\?\"Action\\\\?\"\\s*:\\s*(?:\\\\?\"(?:\\*|\\*:\\*)\\\\?\"|\\[[^\\]]*\\\\?\"(?:\\*|\\*:\\*)\\\\?\")"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.20] Require access request to delete an IAM Access Analyzer",
+      "description": "CIS 1.20: IAM Access Analyzer must be enabled in all active regions. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 140,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\baccessanalyzer\\s+delete-analyzer\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.15] Require justification to attach policies directly to IAM users",
+      "description": "CIS 1.15: permissions are granted only through groups or roles. attach-user-policy / put-user-policy fail it. Requires a written reason. Instead: attach to a group or role.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 150,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+(?:attach-user-policy|put-user-policy)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 1.11/1.14] Require justification to create long-lived IAM access keys",
+      "description": "CIS 1.11 discourages access keys at user setup and 1.14 requires 90-day rotation. Creating a new key adds a long-lived credential. Requires a written reason. Instead: IAM roles or IAM Identity Center short-lived credentials.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 160,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\biam\\s+create-access-key\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.1.4] Require access request to remove S3 public access blocks or set public ACLs",
+      "description": "CIS 2.1.4: S3 Block Public Access must be enabled at the account and bucket level. Deleting the block, setting any block flag to false, or applying a public ACL (public-read, public-read-write, AllUsers, AuthenticatedUsers) exposes data. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bs3(?:api|control)\\s+delete-public-access-block\\b",
+          "(?i)aws\\b[^|;&]*\\bs3(?:api|control)\\s+put-public-access-block\\b[^|;&]*(?:false|=\\s*False)",
+          "aws\\b[^|;&]*\\bs3api\\s+put-(?:bucket|object)-acl\\b[^|;&]*(?:public-read|public-read-write|AllUsers|AuthenticatedUsers)\\b",
+          "aws\\b[^|;&]*\\bs3\\s+(?:cp|sync|mv)\\b[^|;&]*--acl[=\\s]+[\\\"']?public"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.2.1] Require access request to disable EBS encryption by default",
+      "description": "CIS 2.2.1: EBS volume encryption must be enabled by default. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+disable-ebs-encryption-by-default\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.3.3] Require access request to make an RDS instance publicly accessible",
+      "description": "CIS 2.3.3: RDS instances must not be publicly accessible. --publicly-accessible on create or modify fails it. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\brds\\s+(?:create|modify|restore)-db-[a-z-]+\\b[^|;&]*\\s--publicly-accessible\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.1.2] Require justification to suspend versioning or MFA delete on S3",
+      "description": "CIS 2.1.2: MFA Delete should be enabled on S3 versioned buckets. Suspending versioning or disabling MFADelete weakens recoverability. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bs3api\\s+put-bucket-versioning\\b[^|;&]*(?:Status=Suspended|MFADelete=Disabled)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.1.1] Require justification to delete an S3 bucket policy",
+      "description": "CIS 2.1.1: buckets must deny HTTP requests via a bucket policy. Deleting the bucket policy removes that deny. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bs3api\\s+delete-bucket-policy\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.3.1] Require justification to create an unencrypted RDS instance",
+      "description": "CIS 2.3.1: RDS encryption at rest must be enabled. create-db-instance without --storage-encrypted fails it. Requires a written reason. Instead: add --storage-encrypted (and --kms-key-id).",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 250,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\brds\\s+create-db-instance\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*\\brds\\s+create-db-instance\\b[^|;&]*\\s--storage-encrypted\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.4.1] Require justification to create an unencrypted EFS file system",
+      "description": "CIS 2.4.1: EFS must be encrypted at rest. create-file-system without --encrypted fails it. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 260,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\befs\\s+create-file-system\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*\\befs\\s+create-file-system\\b[^|;&]*\\s--encrypted\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 2.3.2] Warn when RDS auto minor version upgrade is disabled",
+      "description": "CIS 2.3.2: auto minor version upgrades keep the engine patched. Records a warning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 270,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\brds\\b[^|;&]*--no-auto-minor-version-upgrade\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.1] Require access request to stop, delete or narrow a CloudTrail trail",
+      "description": "CIS 3.1: CloudTrail must be enabled in all regions with global service events. stop-logging, delete-trail, --no-is-multi-region-trail and --no-include-global-service-events fail it. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudtrail\\s+(?:stop-logging|delete-trail)\\b",
+          "aws\\b[^|;&]*\\bcloudtrail\\s+update-trail\\b[^|;&]*--no-(?:is-multi-region-trail|include-global-service-events)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.3] Require access request to stop or delete the AWS Config recorder",
+      "description": "CIS 3.3: AWS Config must be enabled in all regions. Deleting or stopping the configuration recorder or its delivery channel fails it. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bconfigservice\\s+(?:delete-configuration-recorder|stop-configuration-recorder|delete-delivery-channel)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.2] Require justification to disable CloudTrail log file validation",
+      "description": "CIS 3.2: log file validation proves the trail was not tampered with. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bcloudtrail\\s+update-trail\\b[^|;&]*--no-enable-log-file-validation\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.4] Require justification to turn off S3 server access logging",
+      "description": "CIS 3.4: the CloudTrail bucket (and sensitive buckets) must have access logging. An empty --bucket-logging-status turns it off. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bs3api\\s+put-bucket-logging\\b[^|;&]*--bucket-logging-status[=\\s]+[\\\"']?\\{\\s*\\}"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.6] Require justification to disable KMS key rotation or a KMS key",
+      "description": "CIS 3.6: customer-managed KMS keys must rotate. disable-key-rotation fails it; disable-key makes data unreadable. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bkms\\s+(?:disable-key-rotation|disable-key)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 3.7] Require justification to delete VPC flow logs",
+      "description": "CIS 3.7: VPC flow logging must be enabled in all VPCs. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 350,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+delete-flow-logs\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 4.x] Require justification to delete metric filters, alarms or their SNS topics",
+      "description": "CIS 4.1–4.16 require CloudWatch metric filters and alarms for unauthorised API calls, console sign-in without MFA, root usage, IAM changes, CloudTrail/Config changes, and more. Deleting a filter, alarm, or the SNS topic/subscription that delivers it breaks the control. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\blogs\\s+delete-metric-filter\\b",
+          "aws\\b[^|;&]*\\bcloudwatch\\s+(?:delete-alarms|disable-alarm-actions)\\b",
+          "aws\\b[^|;&]*\\bsns\\s+(?:delete-topic|unsubscribe)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.2/5.3] Require access request to open SSH, RDP or all traffic to the internet",
+      "description": "CIS 5.2 / 5.3: no security group may allow ingress from 0.0.0.0/0 or ::/0 to port 22, 3389, or all ports/protocols. Requires admin approval. Instead: restrict to the VPN/bastion CIDR or use SSM Session Manager.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 500,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+authorize-security-group-ingress\\b[^|;&]*(?:0\\.0\\.0\\.0/0|::/0)[^|;&]*(?:--port[=\\s]+[\\\"']?(?:22|3389)\\b|FromPort=(?:22|3389)\\b|--protocol[=\\s]+[\\\"']?(?:-1|all)\\b|IpProtocol=-1\\b)",
+          "aws\\b[^|;&]*\\bec2\\s+authorize-security-group-ingress\\b[^|;&]*(?:--port[=\\s]+[\\\"']?(?:22|3389)\\b|FromPort=(?:22|3389)\\b|--protocol[=\\s]+[\\\"']?(?:-1|all)\\b|IpProtocol=-1\\b)[^|;&]*(?:0\\.0\\.0\\.0/0|::/0)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.2/5.3] Require justification for any security group ingress from the internet",
+      "description": "Ingress from 0.0.0.0/0 or ::/0 on any port widens the attack surface. Requires a written reason naming the service that must be public.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 510,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+authorize-security-group-ingress\\b[^|;&]*(?:0\\.0\\.0\\.0/0|::/0)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.1] Require justification for NACL entries allowing admin ports from the internet",
+      "description": "CIS 5.1: no network ACL may allow ingress from 0.0.0.0/0 to port 22 or 3389. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 520,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+(?:create|replace)-network-acl-entry\\b[^|;&]*(?:0\\.0\\.0\\.0/0|::/0)[^|;&]*--rule-action[=\\s]+[\\\"']?allow\\b",
+          "aws\\b[^|;&]*\\bec2\\s+(?:create|replace)-network-acl-entry\\b[^|;&]*--rule-action[=\\s]+[\\\"']?allow\\b[^|;&]*(?:0\\.0\\.0\\.0/0|::/0)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.4] Require justification to add rules to the default security group",
+      "description": "CIS 5.4: the default security group of every VPC must restrict all traffic. Adding rules to it fails the control. Requires a written reason. Instead: create a purpose-named security group.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 530,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+authorize-security-group-(?:ingress|egress)\\b[^|;&]*--group-name[=\\s]+[\\\"']?default\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.6] Require justification to allow IMDSv1 on an instance",
+      "description": "CIS 5.6: EC2 metadata service must require IMDSv2 (HttpTokens=required). --http-tokens optional re-enables IMDSv1 credential theft paths. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 540,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+modify-instance-metadata-options\\b[^|;&]*--http-tokens[=\\s]+[\\\"']?optional\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.6] Warn when instances launch without IMDSv2 enforced",
+      "description": "run-instances without --metadata-options HttpTokens=required leaves IMDSv1 enabled on the new instance. Records a warning. Instead: add --metadata-options HttpTokens=required,HttpEndpoint=enabled.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 550,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+run-instances\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+run-instances\\b[^|;&]*HttpTokens=required\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[CIS 5.5] Warn on VPC peering connections",
+      "description": "CIS 5.5: routing tables for VPC peering must be least access. Creating or accepting a peering connection is the moment to check the routes. Records a warning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 560,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+(?:create|accept)-vpc-peering-connection\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[FSBP GuardDuty.1 / SecurityHub.1 / Macie.1] Require access request to disable threat detection services",
+      "description": "AWS Foundational Security Best Practices require GuardDuty, Security Hub, Macie and Inspector to stay enabled. Deleting a detector, disabling Security Hub, or disabling Macie/Inspector removes detection. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 600,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bguardduty\\s+(?:delete-detector|delete-members|disassociate-(?:members|from-master-account|from-administrator-account))\\b",
+          "aws\\b[^|;&]*\\bguardduty\\s+update-detector\\b[^|;&]*--no-enable\\b",
+          "aws\\b[^|;&]*\\bsecurityhub\\s+(?:disable-security-hub|disassociate-from-master-account|disassociate-from-administrator-account|disable-import-findings-for-product)\\b",
+          "aws\\b[^|;&]*\\bmacie2\\s+disable-macie\\b",
+          "aws\\b[^|;&]*\\binspector2\\s+disable\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[FSBP EC2.1 / RDS.1] Require access request to share AMIs or snapshots publicly",
+      "description": "Making an AMI, EBS snapshot or RDS snapshot public (Group=all / --values-to-add all) exposes its contents to every AWS account. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 610,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+modify-(?:image|snapshot)-attribute\\b[^|;&]*(?:Group=all|--group-names[=\\s]+[\\\"']?all)\\b",
+          "aws\\b[^|;&]*\\brds\\s+modify-db-(?:cluster-)?snapshot-attribute\\b[^|;&]*--values-to-add[=\\s]+[\\\"']?all\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "[FSBP SNS.1 / SQS.1 / ECR.1 / Lambda.1] Require access request for resource policies open to any principal",
+      "description": "A resource policy (SNS topic, SQS queue, ECR repository, Secrets Manager, KMS, Lambda permission) with \"Principal\": \"*\" makes the resource callable from any account. Requires admin approval. Instead: name the account or role ARN.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 620,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?is)aws\\b[^|;&]*\\b(?:set-repository-policy|set-queue-attributes|set-topic-attributes|put-resource-policy|put-key-policy|put-bucket-policy)\\b.*\\\\?\"Principal\\\\?\"\\s*:\\s*(?:\\\\?\"\\*\\\\?\"|\\{\\s*\\\\?\"AWS\\\\?\"\\s*:\\s*\\\\?\"\\*\\\\?\")",
+          "aws\\b[^|;&]*\\blambda\\s+add-permission\\b[^|;&]*--principal[=\\s]+[\\\"']?\\*"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

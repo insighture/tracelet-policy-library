@@ -1,0 +1,89 @@
+{
+  "id": "aws-change-freeze-guard",
+  "name": "AWS Change Freeze Guard",
+  "category": "infrastructure",
+  "description": "Change-freeze and maintenance-window control, evaluated locally from the clock: infrastructure changes during declared freeze windows need admin approval (the break-glass path), prod changes outside business hours and any change on a weekend need a written reason, and Friday-afternoon changes draw a warning. Windows, timezone and hours are edited in each rule's Rego after install.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for infrastructure changes during a declared change freeze",
+      "description": "Terraform/CDK/SAM/Pulumi applies, CloudFormation stack operations, Kubernetes/Helm rollouts and direct service mutations are held during declared freeze windows. Requires admin approval (the break-glass override). Edit freeze_windows in the rule's Rego after install — it ships with a year-end freeze from 18 Dec 2026 to 5 Jan 2027 as the example.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ncommand := c if {\n\tc := object.get(input.event, \"command_text\", \"\")\n\tis_string(c)\n}\n\ndefault command := \"\"\n\n# Commands that change deployed infrastructure (IaC apply/destroy, CFN\n# stack operations, Kubernetes/Helm rollouts, direct service mutations).\ninfra_change_re := `(?:terraform|tofu)\\s+(?:apply|destroy)\\b|\\bcdk\\s+(?:deploy|destroy)\\b|\\bsam\\s+(?:deploy|delete|sync)\\b|\\b(?:serverless|sls)\\s+(?:deploy|remove)\\b|\\bpulumi\\s+(?:up|destroy)\\b|\\baws\\s+cloudformation\\s+(?:create-stack|update-stack|delete-stack|deploy|execute-change-set)\\b|\\bkubectl\\s+(?:apply|delete|rollout|scale|patch)\\b|\\bhelm\\s+(?:install|upgrade|uninstall|rollback)\\b|\\baws\\s+(?:ecs\\s+update-service|lambda\\s+update-function-(?:code|configuration)|eks\\s+update-[a-z-]+|rds\\s+(?:modify|delete|reboot)-[a-z-]+|ec2\\s+(?:terminate|run|stop)-instances|autoscaling\\s+update-auto-scaling-group|elbv2\\s+(?:modify|delete)-[a-z-]+|route53\\s+change-resource-record-sets)\\b|\\bansible-playbook\\b|\\beb\\s+deploy\\b|\\bcopilot\\s+(?:deploy|svc\\s+deploy)\\b`\n\ninfra_change if {\n\tcommand != \"\"\n\tregex.match(infra_change_re, command)\n}\n\nnow_ns := time.now_ns()\n\n# EDIT ME: declared change-freeze windows (RFC 3339, UTC). Add one object per\n# freeze. A window is inclusive of `start`, exclusive of `end`.\nfreeze_windows := [\n\t{\"name\": \"Year-end change freeze\", \"start\": \"2026-12-18T00:00:00Z\", \"end\": \"2027-01-05T00:00:00Z\"},\n]\n\nactive_freeze contains w.name if {\n\tsome w in freeze_windows\n\tstart := time.parse_rfc3339_ns(w.start)\n\tend := time.parse_rfc3339_ns(w.end)\n\tnow_ns >= start\n\tnow_ns < end\n}\n\nmatched if {\n\tinfra_change\n\tcount(active_freeze) > 0\n}\n\nreason := sprintf(\"Infrastructure change attempted during the declared change freeze %v — wait for the window to close, or get an explicit break-glass approval from the change manager\", [sort(active_freeze)]) if {\n\tmatched\n}\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for production infrastructure changes outside business hours",
+      "description": "A prod-targeted infrastructure change before 08:00 or after 18:00 (UTC by default — edit tz and the hours in the Rego) runs without an approver awake to catch it. Requires a written reason. Non-prod changes are not gated.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ncommand := c if {\n\tc := object.get(input.event, \"command_text\", \"\")\n\tis_string(c)\n}\n\ndefault command := \"\"\n\n# Commands that change deployed infrastructure (IaC apply/destroy, CFN\n# stack operations, Kubernetes/Helm rollouts, direct service mutations).\ninfra_change_re := `(?:terraform|tofu)\\s+(?:apply|destroy)\\b|\\bcdk\\s+(?:deploy|destroy)\\b|\\bsam\\s+(?:deploy|delete|sync)\\b|\\b(?:serverless|sls)\\s+(?:deploy|remove)\\b|\\bpulumi\\s+(?:up|destroy)\\b|\\baws\\s+cloudformation\\s+(?:create-stack|update-stack|delete-stack|deploy|execute-change-set)\\b|\\bkubectl\\s+(?:apply|delete|rollout|scale|patch)\\b|\\bhelm\\s+(?:install|upgrade|uninstall|rollback)\\b|\\baws\\s+(?:ecs\\s+update-service|lambda\\s+update-function-(?:code|configuration)|eks\\s+update-[a-z-]+|rds\\s+(?:modify|delete|reboot)-[a-z-]+|ec2\\s+(?:terminate|run|stop)-instances|autoscaling\\s+update-auto-scaling-group|elbv2\\s+(?:modify|delete)-[a-z-]+|route53\\s+change-resource-record-sets)\\b|\\bansible-playbook\\b|\\beb\\s+deploy\\b|\\bcopilot\\s+(?:deploy|svc\\s+deploy)\\b`\n\ninfra_change if {\n\tcommand != \"\"\n\tregex.match(infra_change_re, command)\n}\n\nnow_ns := time.now_ns()\n\n# EDIT ME: business hours (24h clock, inclusive start, exclusive end) and the\n# timezone they are judged in.\ntz := \"UTC\"\nbusiness_start_hour := 8\nbusiness_end_hour := 18\n\n# Only production-targeted changes are gated after hours; non-prod work at\n# night is normal. \"prod\" is looked for in the command (profile, workspace,\n# stack, namespace, stage or var value).\nprod_targeted if {\n\tregex.match(`(?i)(?:--profile[=\\s]+\\S*prod|AWS_PROFILE=\\S*prod|\\bworkspace\\s+select\\s+\\S*prod|--stack-name[=\\s]+\\S*prod|--stage[=\\s]+prod|-n\\s+\\S*prod\\b|--namespace[=\\s]+\\S*prod|--context[=\\s]+\\S*prod|\\benv(?:ironment)?=prod|\\.tfvars\\b[^|;&]*prod|prod[^|;&]*\\.tfvars\\b)`, command)\n}\n\nclock := time.clock([now_ns, tz])\nhour := clock[0]\n\noutside_hours if { hour < business_start_hour }\noutside_hours if { hour >= business_end_hour }\n\nmatched if {\n\tinfra_change\n\tprod_targeted\n\toutside_hours\n}\n\nreason := sprintf(\"Production infrastructure change at %02d:%02d %s, outside business hours (%02d:00–%02d:00) — after-hours prod changes need an approver awake to catch them; request access or wait for the maintenance window\", [hour, clock[1], tz, business_start_hour, business_end_hour]) if {\n\tmatched\n}\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for infrastructure changes on weekends",
+      "description": "Infrastructure changes on Saturday or Sunday (UTC by default — edit tz in the Rego) run without the normal on-call bench. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 210,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ncommand := c if {\n\tc := object.get(input.event, \"command_text\", \"\")\n\tis_string(c)\n}\n\ndefault command := \"\"\n\n# Commands that change deployed infrastructure (IaC apply/destroy, CFN\n# stack operations, Kubernetes/Helm rollouts, direct service mutations).\ninfra_change_re := `(?:terraform|tofu)\\s+(?:apply|destroy)\\b|\\bcdk\\s+(?:deploy|destroy)\\b|\\bsam\\s+(?:deploy|delete|sync)\\b|\\b(?:serverless|sls)\\s+(?:deploy|remove)\\b|\\bpulumi\\s+(?:up|destroy)\\b|\\baws\\s+cloudformation\\s+(?:create-stack|update-stack|delete-stack|deploy|execute-change-set)\\b|\\bkubectl\\s+(?:apply|delete|rollout|scale|patch)\\b|\\bhelm\\s+(?:install|upgrade|uninstall|rollback)\\b|\\baws\\s+(?:ecs\\s+update-service|lambda\\s+update-function-(?:code|configuration)|eks\\s+update-[a-z-]+|rds\\s+(?:modify|delete|reboot)-[a-z-]+|ec2\\s+(?:terminate|run|stop)-instances|autoscaling\\s+update-auto-scaling-group|elbv2\\s+(?:modify|delete)-[a-z-]+|route53\\s+change-resource-record-sets)\\b|\\bansible-playbook\\b|\\beb\\s+deploy\\b|\\bcopilot\\s+(?:deploy|svc\\s+deploy)\\b`\n\ninfra_change if {\n\tcommand != \"\"\n\tregex.match(infra_change_re, command)\n}\n\nnow_ns := time.now_ns()\n\n# EDIT ME: the timezone the weekend is judged in.\ntz := \"UTC\"\n\nweekday := time.weekday([now_ns, tz])\n\nmatched if {\n\tinfra_change\n\tweekday in {\"Saturday\", \"Sunday\"}\n}\n\nreason := sprintf(\"Infrastructure change on a %s (%s) — weekend changes run without the normal on-call bench; state why it cannot wait for the next business day\", [weekday, tz]) if {\n\tmatched\n}\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on Friday-afternoon infrastructure changes",
+      "description": "Changes after 15:00 on Friday (UTC by default — edit tz and the cutoff hour in the Rego) are debugged over the weekend when they break. Records a warning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 300,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ncommand := c if {\n\tc := object.get(input.event, \"command_text\", \"\")\n\tis_string(c)\n}\n\ndefault command := \"\"\n\n# Commands that change deployed infrastructure (IaC apply/destroy, CFN\n# stack operations, Kubernetes/Helm rollouts, direct service mutations).\ninfra_change_re := `(?:terraform|tofu)\\s+(?:apply|destroy)\\b|\\bcdk\\s+(?:deploy|destroy)\\b|\\bsam\\s+(?:deploy|delete|sync)\\b|\\b(?:serverless|sls)\\s+(?:deploy|remove)\\b|\\bpulumi\\s+(?:up|destroy)\\b|\\baws\\s+cloudformation\\s+(?:create-stack|update-stack|delete-stack|deploy|execute-change-set)\\b|\\bkubectl\\s+(?:apply|delete|rollout|scale|patch)\\b|\\bhelm\\s+(?:install|upgrade|uninstall|rollback)\\b|\\baws\\s+(?:ecs\\s+update-service|lambda\\s+update-function-(?:code|configuration)|eks\\s+update-[a-z-]+|rds\\s+(?:modify|delete|reboot)-[a-z-]+|ec2\\s+(?:terminate|run|stop)-instances|autoscaling\\s+update-auto-scaling-group|elbv2\\s+(?:modify|delete)-[a-z-]+|route53\\s+change-resource-record-sets)\\b|\\bansible-playbook\\b|\\beb\\s+deploy\\b|\\bcopilot\\s+(?:deploy|svc\\s+deploy)\\b`\n\ninfra_change if {\n\tcommand != \"\"\n\tregex.match(infra_change_re, command)\n}\n\nnow_ns := time.now_ns()\n\n# EDIT ME: timezone and the hour after which Friday deploys draw a warning.\ntz := \"UTC\"\nfriday_cutoff_hour := 15\n\nweekday := time.weekday([now_ns, tz])\nhour := time.clock([now_ns, tz])[0]\n\nmatched if {\n\tinfra_change\n\tweekday == \"Friday\"\n\thour >= friday_cutoff_hour\n}\n\nreason := sprintf(\"Friday %02d:00 %s infrastructure change — anything that breaks now is debugged over the weekend; prefer Monday unless this is a fix\", [hour, tz]) if {\n\tmatched\n}\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

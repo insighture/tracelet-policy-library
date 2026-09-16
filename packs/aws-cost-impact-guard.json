@@ -1,0 +1,217 @@
+{
+  "id": "aws-cost-impact-guard",
+  "name": "AWS Cost Impact Guard",
+  "category": "aws",
+  "description": "Pre-apply cost awareness without a pricing API: reserved-capacity and savings-plan purchases need admin approval; accelerated/metal/8xlarge+ instances, large database and ML classes, big fleets, high provisioned capacity and deleting budgets need a written reason; hourly-billed networking and high-floor managed services draw a warning; high-cost classes written into IaC are flagged at write time; stopped instances are logged for idle-resource follow-up.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for reserved capacity and savings plan purchases",
+      "description": "Reserved instances, savings plans, capacity reservations and reserved nodes are multi-month financial commitments. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+purchase-(?:reserved-instances-offering|host-reservation|scheduled-instances)|savingsplans\\s+create-savings-plan|rds\\s+purchase-reserved-db-instances-offering|elasticache\\s+purchase-reserved-cache-nodes-offering|redshift\\s+purchase-reserved-node-offering|opensearch\\s+purchase-reserved-instance-offering|dynamodb\\s+purchase-reserved-capacity-offerings|ec2\\s+create-capacity-reservation|ec2\\s+allocate-hosts)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to launch accelerated, metal or 8xlarge+ EC2 instances",
+      "description": "GPU/accelerator families (p, g, inf, trn, dl), memory-optimised x/u families, metal, and 8xlarge and larger sizes cost from several dollars to tens of dollars per hour. Requires a written reason with the expected runtime. Instead: start with the smallest size that fits and scale up.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+run-instances|ec2\\s+modify-instance-attribute|ec2\\s+create-launch-template(?:-version)?|autoscaling\\s+create-launch-configuration|batch\\s+create-compute-environment)\\b[^|;&]*--instance-type[=\\s]+[\\\"']?(?:(?:p[2-5]|g[3-6]|inf\\d?|trn\\d?|dl\\d|x\\d[a-z]*|u-\\d+tb\\d?|hpc\\d[a-z]*|f1|vt1)[a-z0-9]*\\.[a-z0-9]+|[a-z0-9-]+\\.(?:metal(?:-\\d+xl)?|(?:8|9|12|16|18|24|32|48|56|96|112)xlarge))\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for large database, cache, warehouse and ML instance classes",
+      "description": "db.*.8xlarge+, cache.*.8xlarge+, ra3.16xlarge / dc2.8xlarge and ml.p/g/trn instance types carry high hourly floors. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*--db-instance-class[=\\s]+[\\\"']?db\\.[a-z0-9]+\\.(?:8|12|16|24|32|48)xlarge\\b",
+          "aws\\b[^|;&]*--cache-node-type[=\\s]+[\\\"']?cache\\.[a-z0-9]+\\.(?:8|12|16|24)xlarge\\b",
+          "aws\\b[^|;&]*--node-type[=\\s]+[\\\"']?(?:ra3\\.16xlarge|dc2\\.8xlarge|ds2\\.8xlarge)\\b",
+          "aws\\b[^|;&]*--instance-type[=\\s]+[\\\"']?ml\\.(?:p|g|trn|inf)[a-z0-9]*\\.[a-z0-9]+\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for large fleet sizes",
+      "description": "run-instances --count 10+, or auto scaling / fleet / node group max or desired capacity of 100+, multiplies hourly cost by the fleet size. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+run-instances\\b[^|;&]*--count[=\\s]+[\\\"']?(?:[1-9]\\d|\\d{3,})\\b",
+          "aws\\b[^|;&]*--(?:max-size|desired-capacity|target-capacity|total-target-capacity)[=\\s]+[\\\"']?\\d{3,}\\b",
+          "aws\\b[^|;&]*--scaling-config[=\\s]+[^|;&]*(?:maxSize|desiredSize)=\\d{3,}\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for high provisioned capacity, IOPS and storage sizes",
+      "description": "DynamoDB capacity units of 1000+, provisioned concurrency, io1/io2 IOPS of 10000+, and volumes or RDS storage of 2 TiB+ are billed whether used or not. Requires a written reason. Instead: on-demand capacity or gp3 defaults unless a benchmark says otherwise.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*(?:Read|Write)CapacityUnits=\\d{4,}\\b",
+          "aws\\b[^|;&]*\\blambda\\s+put-provisioned-concurrency-config\\b",
+          "aws\\b[^|;&]*--iops[=\\s]+[\\\"']?\\d{5,}\\b",
+          "aws\\b[^|;&]*\\bec2\\s+create-volume\\b[^|;&]*--size[=\\s]+[\\\"']?(?:[2-9]\\d{3}|\\d{5,})\\b",
+          "aws\\b[^|;&]*--allocated-storage[=\\s]+[\\\"']?(?:[2-9]\\d{3}|\\d{5,})\\b",
+          "aws\\b[^|;&]*--provisioned-throughput-in-mibps[=\\s]+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to delete budgets or cost anomaly monitors",
+      "description": "Budgets and anomaly monitors are the after-the-fact cost guardrails; deleting them removes the alert that would catch runaway spend. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:budgets\\s+delete-(?:budget|notification|subscriber|budget-action)|ce\\s+delete-anomaly-(?:monitor|subscription))\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on hourly-billed networking resources",
+      "description": "NAT gateways, interface VPC endpoints, transit gateways, Direct Connect, Global Accelerator and unattached Elastic IPs bill every hour they exist. Records a warning. Instead: confirm the resource is needed and tagged with an owner.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+create-nat-gateway|ec2\\s+create-vpc-endpoint\\b[^|;&]*Interface|ec2\\s+create-transit-gateway|directconnect\\s+create-connection|globalaccelerator\\s+create-accelerator|ec2\\s+allocate-address)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn on managed services with a high monthly floor",
+      "description": "Redshift, OpenSearch, EMR, MSK, SageMaker endpoints/notebooks, MemoryDB, Neptune and EKS control planes cost money from creation regardless of load. Records a warning so the cost is acknowledged.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:redshift\\s+create-cluster|opensearch\\s+create-domain|emr\\s+create-cluster|kafka\\s+create-cluster(?:-v2)?|sagemaker\\s+create-(?:endpoint|notebook-instance|domain)|memorydb\\s+create-cluster|neptune\\s+create-db-cluster|eks\\s+create-cluster|docdb\\s+create-db-cluster|rds\\s+create-db-cluster)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Log stopped instances that keep billing storage",
+      "description": "Stopped EC2 instances still bill for their EBS volumes and any Elastic IP. Logged so the idle-resource nudge can follow up. Does not block or warn.",
+      "action": "log",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bec2\\s+stop-instances\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when a high-cost instance class is written to IaC",
+      "description": "Inspects the content the AI tool is about to write (Terraform, CloudFormation, CDK) for accelerated, metal or 8xlarge+ instance and database classes so the cost is visible before the plan is applied. Records a warning.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 410,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ntool_input := ti if {\n\tti := object.get(input.event, [\"raw_json\", \"tool_input\"], {})\n\tis_object(ti)\n}\n\ndefault tool_input := {}\n\ncandidate_texts contains t if {\n\tsome k in [\"content\", \"new_string\", \"new_str\", \"text\", \"code\", \"contents\"]\n\tt := object.get(tool_input, k, \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tsome e in object.get(tool_input, \"edits\", [])\n\tis_object(e)\n\tt := object.get(e, \"new_string\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tt := object.get(input.event, \"command_text\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\nscan_text := concat(\"\\n\", [t | some t in candidate_texts])\n\nfile_path := object.get(input.event, \"file_path\", \"\")\n\n# High-cost instance / node classes written into IaC (Terraform, CFN, CDK).\nexpensive_re := `(?i)(?:instance_type|InstanceType|instanceType|db_instance_class|DBInstanceClass|instance_class|node_type|NodeType|cache_node_type|CacheNodeType)\\s*[=:]\\s*['\"]?((?:db\\.|cache\\.|ml\\.)?(?:p[2-5]|g[3-6]|inf\\d?|trn\\d?|dl\\d|x\\d[a-z]*|u-\\d+tb\\d?|hpc\\d[a-z]*|f1|vt1|ra3|dc2|ds2)[a-z0-9]*\\.[a-z0-9]+|(?:db\\.|cache\\.|ml\\.)?[a-z0-9-]+\\.(?:metal(?:-\\d+xl)?|(?:8|9|12|16|18|24|32|48|56|96|112)xlarge))`\n\nhits contains h if {\n\tsome m in regex.find_all_string_submatch_n(expensive_re, scan_text, -1)\n\th := m[1]\n}\n\nmatched if {\n\tscan_text != \"\"\n\tcount(hits) > 0\n}\n\nreason := sprintf(\"High-cost instance class %v written to %s — confirm the sizing is intentional and that the plan's cost impact has been reviewed before apply\", [sort(hits), display_path]) if {\n\tmatched\n}\n\ndisplay_path := file_path if { file_path != \"\" }\ndisplay_path := \"the command\" if { file_path == \"\" }\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": null
+    }
+  ]
+}

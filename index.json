@@ -368,6 +368,70 @@
       "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
       "version": "1.0.0",
       "rule_count": 7
+    },
+    {
+      "id": "aws-iam-least-privilege-guard",
+      "name": "AWS IAM Least-Privilege Guard",
+      "category": "aws",
+      "description": "IAM policy-widening guard: catches an AI agent 'fixing' an AccessDenied by attaching admin-equivalent policies, writing wildcard actions/resources/principals, removing permissions boundaries or Organizations policies, or granting cluster-admin — on the CLI and in IaC files at write time. Admin-equivalent grants need admin approval; service-wide wildcards need a written reason with a least-privilege alternative suggested.",
+      "version": "1.0.0",
+      "rule_count": 15
+    },
+    {
+      "id": "aws-account-identity-guard",
+      "name": "AWS Account Identity Guard",
+      "category": "aws",
+      "description": "Declared-profile vs. actual-account safety: destructive operations under a prod profile need admin approval, profile switches via AWS_PROFILE, inline static credentials and local profile rewrites need a written reason, destructive commands on ambient credentials draw a warning, and identity checks / cross-account role assumptions are logged for the cross-account exposure report.",
+      "version": "1.0.0",
+      "rule_count": 8
+    },
+    {
+      "id": "aws-data-residency-guard",
+      "name": "AWS Data Residency Guard",
+      "category": "aws",
+      "description": "Region allowlist for data-residency commitments: AWS CLI, environment overrides, IaC deploy tools and files written by the AI are checked against an approved-region list (EU by default — edit after install). Out-of-list regions need a written reason; GovCloud/China partitions and region opt-ins need admin approval; cross-region copies and replication need a reason.",
+      "version": "1.0.0",
+      "rule_count": 8
+    },
+    {
+      "id": "aws-change-review-guard",
+      "name": "AWS Change Review Guard",
+      "category": "infrastructure",
+      "description": "Plan-before-apply discipline for Terraform, CloudFormation and CDK: applies without a reviewed plan or change set, targeted/replace applies, lock and refresh bypasses, IAM-capability stacks, rollback and stack-policy overrides, and CDK hotswap need a written reason; removing termination protection needs admin approval; plan and change-set generation is logged as review evidence. Complements Terraform Baseline (which gates apply/destroy outright).",
+      "version": "1.0.0",
+      "rule_count": 13
+    },
+    {
+      "id": "aws-cost-allocation-tags-guard",
+      "name": "AWS Cost Allocation Tags Guard",
+      "category": "aws",
+      "description": "Cost-allocation tag enforcement at creation time: untagged resource creation and tag removal need a written reason, missing Owner / CostCenter / Environment keys draw a coaching warning, disabling Organizations tag policies needs admin approval, and every AI-initiated resource creation is logged for idle-resource attribution.",
+      "version": "1.0.0",
+      "rule_count": 9
+    },
+    {
+      "id": "aws-cost-impact-guard",
+      "name": "AWS Cost Impact Guard",
+      "category": "aws",
+      "description": "Pre-apply cost awareness without a pricing API: reserved-capacity and savings-plan purchases need admin approval; accelerated/metal/8xlarge+ instances, large database and ML classes, big fleets, high provisioned capacity and deleting budgets need a written reason; hourly-billed networking and high-floor managed services draw a warning; high-cost classes written into IaC are flagged at write time; stopped instances are logged for idle-resource follow-up.",
+      "version": "1.0.0",
+      "rule_count": 10
+    },
+    {
+      "id": "aws-change-freeze-guard",
+      "name": "AWS Change Freeze Guard",
+      "category": "infrastructure",
+      "description": "Change-freeze and maintenance-window control, evaluated locally from the clock: infrastructure changes during declared freeze windows need admin approval (the break-glass path), prod changes outside business hours and any change on a weekend need a written reason, and Friday-afternoon changes draw a warning. Windows, timezone and hours are edited in each rule's Rego after install.",
+      "version": "1.0.0",
+      "rule_count": 4
+    },
+    {
+      "id": "aws-cis-foundations-guard",
+      "name": "AWS CIS Foundations Guard",
+      "category": "aws",
+      "description": "Named compliance bundle mapped to the CIS AWS Foundations Benchmark v3.0 (IAM, Storage, Logging, Monitoring, Networking sections) plus a few AWS Foundational Security Best Practices controls. Every rule name carries its control ID so the installed group doubles as the coverage evidence for audits and security questionnaires. Control-removing operations need admin approval; control-weakening ones need a written reason; hygiene gaps draw a warning.",
+      "version": "1.0.0",
+      "rule_count": 32
     }
   ]
 }

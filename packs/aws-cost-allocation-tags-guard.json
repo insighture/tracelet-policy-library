@@ -1,0 +1,203 @@
+{
+  "id": "aws-cost-allocation-tags-guard",
+  "name": "AWS Cost Allocation Tags Guard",
+  "category": "aws",
+  "description": "Cost-allocation tag enforcement at creation time: untagged resource creation and tag removal need a written reason, missing Owner / CostCenter / Environment keys draw a coaching warning, disabling Organizations tag policies needs admin approval, and every AI-initiated resource creation is logged for idle-resource attribution.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request to disable the Organizations tag policy type",
+      "description": "Tag policies are how required cost-allocation tags are enforced at the organisation level. Disabling the policy type removes the control everywhere. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\borganizations\\s+disable-policy-type\\b[^|;&]*TAG_POLICY\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to create AWS resources without tags",
+      "description": "A resource created with no --tags / --tag-specifications is unattributable spend from the moment it exists. Requires a written reason. Instead: add --tags Key=Owner,Value=<team> Key=CostCenter,Value=<cc> Key=Environment,Value=<env>.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+(?:run-instances|create-volume|create-vpc|create-security-group|create-nat-gateway|allocate-address|create-snapshot|create-image)|rds\\s+create-db-(?:instance|cluster)|lambda\\s+create-function|dynamodb\\s+create-table|ecs\\s+create-(?:cluster|service)|eks\\s+create-(?:cluster|nodegroup)|elbv2\\s+create-load-balancer|cloudformation\\s+create-stack|elasticache\\s+create-(?:cache-cluster|replication-group)|redshift\\s+create-cluster|sqs\\s+create-queue|sns\\s+create-topic|kinesis\\s+create-stream|opensearch\\s+create-domain|efs\\s+create-file-system|ecr\\s+create-repository|logs\\s+create-log-group|secretsmanager\\s+create-secret|kms\\s+create-key|apigateway\\s+create-rest-api|apigatewayv2\\s+create-api|sagemaker\\s+create-(?:endpoint|notebook-instance)|emr\\s+create-cluster)\\b"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*--tag(?:s|-specifications)?[=\\s][^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to remove tags from AWS resources",
+      "description": "Removing tags breaks cost attribution and can detach a resource from the team that owns it. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+delete-tags|resourcegroupstaggingapi\\s+untag-resources|s3api\\s+delete-bucket-tagging|rds\\s+remove-tags-from-resource|[a-z0-9-]+\\s+untag-resources?)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification to deactivate cost allocation tags or delete cost categories",
+      "description": "Deactivating a cost-allocation tag or deleting a cost category removes the dimension that finance reports on. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\bce\\s+update-cost-allocation-tags-status\\b[^|;&]*Inactive\\b",
+          "aws\\b[^|;&]*\\bce\\s+delete-cost-category-definition\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when a tagged resource has no Owner tag",
+      "description": "Tags are present but none is Owner. Records a warning. Instead: add Key=Owner,Value=<team or email> so the idle-resource nudge can reach the right engineer.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+(?:run-instances|create-volume|create-vpc|create-security-group|create-nat-gateway|allocate-address|create-snapshot|create-image)|rds\\s+create-db-(?:instance|cluster)|lambda\\s+create-function|dynamodb\\s+create-table|ecs\\s+create-(?:cluster|service)|eks\\s+create-(?:cluster|nodegroup)|elbv2\\s+create-load-balancer|cloudformation\\s+create-stack|elasticache\\s+create-(?:cache-cluster|replication-group)|redshift\\s+create-cluster|sqs\\s+create-queue|sns\\s+create-topic|kinesis\\s+create-stream|opensearch\\s+create-domain|efs\\s+create-file-system|ecr\\s+create-repository|logs\\s+create-log-group|secretsmanager\\s+create-secret|kms\\s+create-key|apigateway\\s+create-rest-api|apigatewayv2\\s+create-api|sagemaker\\s+create-(?:endpoint|notebook-instance)|emr\\s+create-cluster)\\b[^|;&]*--tag(?:s|-specifications)?[=\\s]"
+        ],
+        "allowed_patterns": [
+          "(?i)aws\\b[^|;&]*--tag(?:s|-specifications)?[=\\s][^|;&]*\\bowner\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when a tagged resource has no CostCenter tag",
+      "description": "Tags are present but none is CostCenter (or cost-center / cost_centre). Records a warning. Instead: add Key=CostCenter,Value=<code>.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+(?:run-instances|create-volume|create-vpc|create-security-group|create-nat-gateway|allocate-address|create-snapshot|create-image)|rds\\s+create-db-(?:instance|cluster)|lambda\\s+create-function|dynamodb\\s+create-table|ecs\\s+create-(?:cluster|service)|eks\\s+create-(?:cluster|nodegroup)|elbv2\\s+create-load-balancer|cloudformation\\s+create-stack|elasticache\\s+create-(?:cache-cluster|replication-group)|redshift\\s+create-cluster|sqs\\s+create-queue|sns\\s+create-topic|kinesis\\s+create-stream|opensearch\\s+create-domain|efs\\s+create-file-system|ecr\\s+create-repository|logs\\s+create-log-group|secretsmanager\\s+create-secret|kms\\s+create-key|apigateway\\s+create-rest-api|apigatewayv2\\s+create-api|sagemaker\\s+create-(?:endpoint|notebook-instance)|emr\\s+create-cluster)\\b[^|;&]*--tag(?:s|-specifications)?[=\\s]"
+        ],
+        "allowed_patterns": [
+          "(?i)aws\\b[^|;&]*--tag(?:s|-specifications)?[=\\s][^|;&]*\\bcost[-_ ]?cent(?:er|re)\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when a tagged resource has no Environment tag",
+      "description": "Tags are present but none is Environment (or env). Records a warning. Instead: add Key=Environment,Value=<dev|staging|prod>.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+(?:run-instances|create-volume|create-vpc|create-security-group|create-nat-gateway|allocate-address|create-snapshot|create-image)|rds\\s+create-db-(?:instance|cluster)|lambda\\s+create-function|dynamodb\\s+create-table|ecs\\s+create-(?:cluster|service)|eks\\s+create-(?:cluster|nodegroup)|elbv2\\s+create-load-balancer|cloudformation\\s+create-stack|elasticache\\s+create-(?:cache-cluster|replication-group)|redshift\\s+create-cluster|sqs\\s+create-queue|sns\\s+create-topic|kinesis\\s+create-stream|opensearch\\s+create-domain|efs\\s+create-file-system|ecr\\s+create-repository|logs\\s+create-log-group|secretsmanager\\s+create-secret|kms\\s+create-key|apigateway\\s+create-rest-api|apigatewayv2\\s+create-api|sagemaker\\s+create-(?:endpoint|notebook-instance)|emr\\s+create-cluster)\\b[^|;&]*--tag(?:s|-specifications)?[=\\s]"
+        ],
+        "allowed_patterns": [
+          "(?i)aws\\b[^|;&]*--tag(?:s|-specifications)?[=\\s][^|;&]*\\b(?:environment|env)\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when an S3 bucket is created",
+      "description": "s3 mb / s3api create-bucket cannot take tags inline. Records a warning as a reminder. Instead: follow with aws s3api put-bucket-tagging --bucket <name> --tagging 'TagSet=[{Key=Owner,Value=...}]'.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:s3\\s+mb|s3api\\s+create-bucket)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Log AI-initiated AWS resource creation for idle-resource attribution",
+      "description": "Every resource-creating AWS command is logged so cloud resources created by an AI session can later be matched back to the engineer who owns them (idle-resource nudges). Does not block or warn.",
+      "action": "log",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:ec2\\s+(?:run-instances|create-volume|create-vpc|create-security-group|create-nat-gateway|allocate-address|create-snapshot|create-image)|rds\\s+create-db-(?:instance|cluster)|lambda\\s+create-function|dynamodb\\s+create-table|ecs\\s+create-(?:cluster|service)|eks\\s+create-(?:cluster|nodegroup)|elbv2\\s+create-load-balancer|cloudformation\\s+create-stack|elasticache\\s+create-(?:cache-cluster|replication-group)|redshift\\s+create-cluster|sqs\\s+create-queue|sns\\s+create-topic|kinesis\\s+create-stream|opensearch\\s+create-domain|efs\\s+create-file-system|ecr\\s+create-repository|logs\\s+create-log-group|secretsmanager\\s+create-secret|kms\\s+create-key|apigateway\\s+create-rest-api|apigatewayv2\\s+create-api|sagemaker\\s+create-(?:endpoint|notebook-instance)|emr\\s+create-cluster)\\b",
+          "aws\\b[^|;&]*\\b(?:s3\\s+mb|s3api\\s+create-bucket)\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    }
+  ]
+}

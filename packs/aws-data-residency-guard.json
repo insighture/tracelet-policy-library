@@ -1,0 +1,184 @@
+{
+  "id": "aws-data-residency-guard",
+  "name": "AWS Data Residency Guard",
+  "category": "aws",
+  "description": "Region allowlist for data-residency commitments: AWS CLI, environment overrides, IaC deploy tools and files written by the AI are checked against an approved-region list (EU by default — edit after install). Out-of-list regions need a written reason; GovCloud/China partitions and region opt-ins need admin approval; cross-region copies and replication need a reason.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request to target GovCloud, China or isolated partitions",
+      "description": "us-gov-*, cn-* and us-iso* regions are separate partitions with their own compliance regimes and credentials. Requires admin approval before any command targets them.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)(?:--region[=\\s]+|AWS_(?:DEFAULT_)?REGION=|LocationConstraint=)[\\\"']?(?:us-gov-|cn-|us-iso)"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require access request to opt in to a new AWS region",
+      "description": "account enable-region turns on a region the organisation has not approved for data. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\baccount\\s+enable-region\\b"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for AWS CLI commands targeting a region outside the allowlist",
+      "description": "The --region flag (or an S3 LocationConstraint) names a region outside the approved data-residency list. Requires a written reason. Default allowlist: EU regions (eu-west-1/2/3, eu-central-1/2, eu-north-1, eu-south-1/2) — edit the allowed_patterns after install to match your organisation. Instead: pick an approved region.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*--region[=\\s]+[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d",
+          "aws\\b[^|;&]*LocationConstraint=[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d"
+        ],
+        "allowed_patterns": [
+          "aws\\b[^|;&]*--region[=\\s]+[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$",
+          "aws\\b[^|;&]*LocationConstraint=[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for region overrides through the environment",
+      "description": "AWS_REGION / AWS_DEFAULT_REGION / CDK_DEFAULT_REGION / TF_VAR_region set to a region outside the allowlist redirects every following command. Requires a written reason. Default allowlist: EU regions — edit allowed_patterns after install.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?:^|[\\s;&|])(?:export\\s+)?(?:AWS_(?:DEFAULT_)?REGION|CDK_DEFAULT_REGION|TF_VAR_(?:aws_)?region)=[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d"
+        ],
+        "allowed_patterns": [
+          "(?:AWS_(?:DEFAULT_)?REGION|CDK_DEFAULT_REGION|TF_VAR_(?:aws_)?region)=[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for IaC tools deploying to a region outside the allowlist",
+      "description": "cdk/sam/serverless/amplify/copilot/eb --region, or terraform -var region=..., outside the approved list deploys infrastructure where the data may not live. Requires a written reason. Default allowlist: EU regions — edit allowed_patterns after install.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:cdk|sam|serverless|sls|amplify|copilot|eb)\\b[^|;&]*--region[=\\s]+[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d",
+          "\\b(?:terraform|tofu)\\b[^|;&]*-var[=\\s]+[\\\"']?(?:aws_)?region=[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d"
+        ],
+        "allowed_patterns": [
+          "\\b(?:cdk|sam|serverless|sls|amplify|copilot|eb)\\b[^|;&]*--region[=\\s]+[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$",
+          "\\b(?:terraform|tofu)\\b[^|;&]*-var[=\\s]+[\\\"']?(?:aws_)?region=[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification for cross-region copies and replication",
+      "description": "copy-image/copy-snapshot/copy-db-snapshot with --source-region, put-bucket-replication, and global tables move data between regions. Requires a written reason confirming the destination region is approved.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\b[^|;&]*\\b(?:copy-(?:image|snapshot|db-snapshot|db-cluster-snapshot)|put-bucket-replication|create-global-(?:table|cluster)|create-global-replication-group)\\b",
+          "aws\\b[^|;&]*--source-region[=\\s]+"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Warn when the default region is reconfigured outside the allowlist",
+      "description": "aws configure set region changes the sticky default for every later command. Records a warning. Default allowlist: EU regions — edit allowed_patterns after install.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "aws\\s+configure\\s+set\\s+(?:\\S+\\.)?region\\s+[\\\"']?[a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d"
+        ],
+        "allowed_patterns": [
+          "aws\\s+configure\\s+set\\s+(?:\\S+\\.)?region\\s+[\\\"']?eu-(?:west|central|north|south)-\\d\\b[^|;&]*$"
+        ]
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": [
+        "Bash"
+      ]
+    },
+    {
+      "name": "Require justification when a region outside the allowlist is written to IaC or config",
+      "description": "Inspects the content the AI tool is about to write (Terraform provider blocks, CFN/CDK config, SDK config, .env) for region literals outside the approved list. Requires a written reason. Default allowlist: EU regions — edit allowed_regions in the Rego after install.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 400,
+      "rule_type": "opa",
+      "rule_config": {
+        "rego": "package tracelet.policy\n\nimport rego.v1\n\ndefault matched := false\ndefault reason := \"\"\n\ntool_input := ti if {\n\tti := object.get(input.event, [\"raw_json\", \"tool_input\"], {})\n\tis_object(ti)\n}\n\ndefault tool_input := {}\n\ncandidate_texts contains t if {\n\tsome k in [\"content\", \"new_string\", \"new_str\", \"text\", \"code\", \"contents\"]\n\tt := object.get(tool_input, k, \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tsome e in object.get(tool_input, \"edits\", [])\n\tis_object(e)\n\tt := object.get(e, \"new_string\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\ncandidate_texts contains t if {\n\tt := object.get(input.event, \"command_text\", \"\")\n\tis_string(t)\n\tt != \"\"\n}\n\nscan_text := concat(\"\\n\", [t | some t in candidate_texts])\n\nfile_path := object.get(input.event, \"file_path\", \"\")\n\n# Region literals written into IaC / SDK config. Edit `allowed_regions` to\n# your organisation's approved list (default: EU regions).\nallowed_regions := {\n\t\"eu-west-1\", \"eu-west-2\", \"eu-west-3\",\n\t\"eu-central-1\", \"eu-central-2\",\n\t\"eu-north-1\", \"eu-south-1\", \"eu-south-2\",\n}\n\nregion_literal_re := `(?i)(?:\\bregion\\b|AWS_(?:DEFAULT_)?REGION|LocationConstraint|CDK_DEFAULT_REGION)\\s*[=:]\\s*['\"]?([a-z]{2}(?:-gov|-iso[a-z]*)?-[a-z]+-\\d)`\n\nfound_regions contains r if {\n\tsome m in regex.find_all_string_submatch_n(region_literal_re, scan_text, -1)\n\tr := lower(m[1])\n}\n\noffending contains r if {\n\tsome r in found_regions\n\tnot allowed_regions[r]\n}\n\nmatched if {\n\tscan_text != \"\"\n\tcount(offending) > 0\n}\n\nreason := sprintf(\"Region %v written to %s is outside the approved data-residency allowlist (%v) — pick an approved region or get the allowlist updated\", [sort(offending), display_path, sort(allowed_regions)]) if {\n\tmatched\n}\n\ndisplay_path := file_path if { file_path != \"\" }\ndisplay_path := \"the command\" if { file_path == \"\" }\n",
+        "query": "data.tracelet.policy.matched",
+        "reason_query": "data.tracelet.policy.reason"
+      },
+      "events": [
+        "pre_tool_use"
+      ],
+      "tools": null
+    }
+  ]
+}
