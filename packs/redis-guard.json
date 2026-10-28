@@ -3,7 +3,7 @@
   "name": "Redis Guard",
   "category": "database",
   "description": "Redis protection: FLUSHALL/FLUSHDB, CONFIG REWRITE, destructive key operations, and cluster reset commands. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for flushall",
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)\\bredis-cli\\b.*\\b(?:KEYS\\b|--scan\\b|SCAN\\b).*\\|\\s*xargs\\s+(?:-\\S+(?:\\s+\\S+)?\\s+)*redis-cli(?:\\s+\\S+)*\\s+(?:DEL|UNLINK)\\b"
+          "(?i)\\bredis-cli\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:KEYS\\b|--scan\\b|SCAN\\b)[^;\\n]*\\|\\s*xargs\\s+(?:-\\S+(?:\\s+\\S+)?\\s+)*redis-cli(?:\\s+\\S+)*\\s+(?:DEL|UNLINK)\\b"
         ]
       },
       "events": [

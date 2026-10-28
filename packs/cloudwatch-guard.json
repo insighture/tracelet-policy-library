@@ -3,7 +3,7 @@
   "name": "CloudWatch Guard",
   "category": "aws",
   "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for logs delete subscription filter",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\blogs\\s+delete-subscription-filter\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\blogs\\s+delete-subscription-filter\\b"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\bcloudwatch\\s+delete-alarms\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudwatch\\s+delete-alarms\\b"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\bcloudwatch\\s+disable-alarm-actions\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudwatch\\s+disable-alarm-actions\\b"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\blogs\\s+put-retention-policy\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\blogs\\s+put-retention-policy\\b"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\bcloudwatch\\s+delete-dashboards\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudwatch\\s+delete-dashboards\\b"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\blogs\\s+delete-metric-filter\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\blogs\\s+delete-metric-filter\\b"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "aws\\b.*?\\bcloudwatch\\s+set-alarm-state\\b"
+          "aws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudwatch\\s+set-alarm-state\\b"
         ]
       },
       "events": [

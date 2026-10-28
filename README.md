@@ -215,6 +215,30 @@ Rules within a policy group are evaluated in ascending priority order (lower num
 3. Bump `version` in both files for any rule changes.
 4. Validate JSON: `python3 -m json.tool packs/{id}.json > /dev/null`.
 5. Verify all regex patterns are RE2-valid (no lookaheads, no backreferences).
+6. Run `go test ./...` and add cases for new rules to `tests/cases.json`.
+
+## Writing `command_filter` patterns
+
+The agent matches each blocked pattern against the **whole shell line**, not
+one command. A bare `.*` therefore runs across `&&`, `;` and `||` into the next
+chained command. For example, `git\s+push\b.*\bmain\b` blocks
+`git push origin feat && gh pr create --base main`, which never pushes to main.
+
+- Instead of `.*`, use the "one command" token
+  `(?:[^;&|\n]|'[^']*'|"[^"]*"|[0-9]*[<>]&[0-9-]*|&>)*`. It stops at
+  `;`, `&&`, `||` and newlines, but steps over a quoted `;` or `&`
+  (`git push -o 'a;b' origin main`) and redirects like `2>&1`, and it can
+  still match text inside quotes (`psql -c "DROP TABLE x"`).
+  A plain `[^;&|\n]*` is simpler but misses those quoted and redirect
+  shapes, so a real push to main could slip through.
+- A pattern that is meant to span a pipe (`curl … | sh`) uses `[^;\n]*` around
+  the `\|`, so redirects like `2>&1` still match.
+- End a branch-name match with `(?:$|[\s:;&|])`, so `git push origin main;`
+  is still caught.
+
+`tests/` enforces this: every pattern must compile, no `command_filter`
+blocked pattern may use an unbounded `.*` / `.+`, and every entry in
+`tests/cases.json` must block or pass as listed.
 
 ## Derived packs (dcg import)
 

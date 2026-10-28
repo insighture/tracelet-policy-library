@@ -3,7 +3,7 @@
   "name": "Docker Baseline",
   "category": "docker",
   "description": "Guards high-risk Docker operations: privileged container runs, host filesystem mounts, system pruning, and image pushes. Requires admin approval via access request for operations that can escape container isolation or cause irreversible data loss.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request to mount host root filesystem",
@@ -14,7 +14,7 @@
       "priority": 100,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["docker\\s+run\\b.*-v\\s+/[: ]"]
+        "blocked_patterns": ["docker\\s+run\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-v\\s+/[: ]"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -28,7 +28,7 @@
       "priority": 110,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["docker\\s+run\\b.*--privileged"]
+        "blocked_patterns": ["docker\\s+run\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--privileged"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -43,7 +43,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "docker\\s+(system\\s+)?prune\\b.*-a",
+          "docker\\s+(system\\s+)?prune\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-a",
           "docker\\s+volume\\s+prune\\b"
         ]
       },
@@ -73,7 +73,7 @@
       "priority": 300,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["docker\\s+rm\\b.*-f\\b"]
+        "blocked_patterns": ["docker\\s+rm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-f\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]

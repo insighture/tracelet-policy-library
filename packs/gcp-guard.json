@@ -3,7 +3,7 @@
   "name": "GCP Guard",
   "category": "gcp",
   "description": "Protects Google Cloud: project/instance deletion, GCS bucket removal, GKE cluster teardown, IAM policy changes, and destructive gcloud/gsutil operations. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for compute delete",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bcompute\\s+instances\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcompute\\s+instances\\s+delete"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bcompute\\s+disks\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcompute\\s+disks\\s+delete"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bsql\\s+instances\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bsql\\s+instances\\s+delete"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gsutil\\b.*?\\brm\\s+.*-r|gsutil\\b.*?\\brm\\s+-[a-z]*r"
+          "gsutil\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-r|gsutil\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brm\\s+-[a-z]*r"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gsutil\\b.*?\\brb(?:\\s|$)"
+          "gsutil\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brb(?:\\s|$)"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bcontainer\\s+clusters\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcontainer\\s+clusters\\s+delete"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bprojects\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bprojects\\s+delete"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bfirestore\\s+.*delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bfirestore\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*delete"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bartifacts\\s+repositories\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bartifacts\\s+repositories\\s+delete"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bsecrets\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bsecrets\\s+delete"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bfunctions\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bfunctions\\s+delete"
         ]
       },
       "events": [
@@ -235,7 +235,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bkms\\s+keys\\s+versions\\s+destroy"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bkms\\s+keys\\s+versions\\s+destroy"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bpubsub\\s+(?:topics|subscriptions)\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpubsub\\s+(?:topics|subscriptions)\\s+delete"
         ]
       },
       "events": [
@@ -275,7 +275,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\biam\\s+service-accounts\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\biam\\s+service-accounts\\s+delete"
         ]
       },
       "events": [
@@ -295,7 +295,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bcontainer\\s+images\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcontainer\\s+images\\s+delete"
         ]
       },
       "events": [
@@ -315,7 +315,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bdns\\s+managed-zones\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdns\\s+managed-zones\\s+delete"
         ]
       },
       "events": [
@@ -335,7 +335,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bartifacts\\s+docker\\s+images\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bartifacts\\s+docker\\s+images\\s+delete"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bspanner\\s+instances\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bspanner\\s+instances\\s+delete"
         ]
       },
       "events": [
@@ -375,7 +375,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\biam\\s+roles\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\biam\\s+roles\\s+delete"
         ]
       },
       "events": [
@@ -395,7 +395,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bbigtable\\s+instances\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bbigtable\\s+instances\\s+delete"
         ]
       },
       "events": [
@@ -415,7 +415,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\blogging\\s+sinks\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\blogging\\s+sinks\\s+delete"
         ]
       },
       "events": [
@@ -435,7 +435,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bbq\\b.*?\\brm\\s+.*-r\\b|\\bbq\\b.*?\\brm\\s+.*-f\\b"
+          "\\bbq\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-r\\b|\\bbq\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-f\\b"
         ]
       },
       "events": [
@@ -455,7 +455,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bdataproc\\s+clusters\\s+delete"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdataproc\\s+clusters\\s+delete"
         ]
       },
       "events": [

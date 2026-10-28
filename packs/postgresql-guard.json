@@ -3,7 +3,7 @@
   "name": "PostgreSQL Guard",
   "category": "database",
   "description": "Deep PostgreSQL protection: DROP DATABASE/TABLE/SCHEMA, TRUNCATE, unqualified DELETE, dropdb, and destructive pg_dump --clean restores. Complements Database Baseline with engine-specific coverage. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for drop database",
@@ -153,7 +153,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pg_dump\\s+.*(?:--clean|-c\\b)"
+          "pg_dump\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:--clean|-c\\b)"
         ],
         "allowed_patterns": [
           "(?:(?i)^\\s*SELECT\\s+)"

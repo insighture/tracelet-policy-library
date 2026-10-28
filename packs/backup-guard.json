@@ -3,7 +3,7 @@
   "name": "Backup Guard",
   "category": "backup",
   "description": "Protects backup systems — the last line of defence: snapshot forgetting/pruning, repository deletion, rclone purge/delete, and Velero backup removal. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for restic forget",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "restic\\b.*\\sforget\\b"
+          "restic\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\sforget\\b"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "restic\\b.*\\sprune\\b"
+          "restic\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\sprune\\b"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "restic\\b.*\\skey\\b.*\\sremove\\b"
+          "restic\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\skey\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\sremove\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "restic\\b.*\\sunlock\\b.*\\s--remove-all\\b"
+          "restic\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\sunlock\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--remove-all\\b"
         ]
       },
       "events": [
@@ -435,7 +435,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "restic\\b.*\\scache\\b.*\\s--cleanup\\b"
+          "restic\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\scache\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--cleanup\\b"
         ]
       },
       "events": [

@@ -3,7 +3,7 @@
   "name": "Load Balancer Guard",
   "category": "loadbalancer",
   "description": "Protects load balancers and reverse proxies: config deletion, listener/target-group removal, and destructive reloads across nginx, ELB/ALB, HAProxy, and Traefik. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for nginx config delete",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\brm\\b.*\\s+['\"]?/etc/nginx(?:/|\\b)"
+          "\\brm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+['\"]?/etc/nginx(?:/|\\b)"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "docker\\b.*?\\s+(?:stop|kill)\\s+.*\\btraefik\\b"
+          "docker\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+(?:stop|kill)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "docker\\b.*?\\s+rm\\s+.*\\btraefik\\b"
+          "docker\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+rm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "docker[\\s-]compose\\s+.*\\bdown\\b.*\\btraefik\\b"
+          "docker[\\s-]compose\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bdown\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\s+delete\\s+(?:pod|deployment|daemonset)\\s+.*\\btraefik\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+delete\\s+(?:pod|deployment|daemonset)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\brm\\b.*\\btraefik\\b.*\\.(?:ya?ml|toml)\\b"
+          "\\brm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\.(?:ya?ml|toml)\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "systemctl\\b.*?\\s+stop\\s+nginx(?:\\.service)?\\b"
+          "systemctl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+stop\\s+nginx(?:\\.service)?\\b"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bhaproxy\\s+.*-sf\\b"
+          "\\bhaproxy\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-sf\\b"
         ]
       },
       "events": [
@@ -375,7 +375,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bhaproxy\\s+.*-st\\b"
+          "\\bhaproxy\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-st\\b"
         ]
       },
       "events": [
@@ -395,7 +395,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "systemctl\\b.*?\\s+stop\\s+haproxy(?:\\.service)?\\b"
+          "systemctl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+stop\\s+haproxy(?:\\.service)?\\b"
         ]
       },
       "events": [
@@ -435,7 +435,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:echo|printf)\\s+['\"]?disable\\s+server\\b.*\\|\\s*socat\\b"
+          "(?:echo|printf)\\s+['\"]?disable\\s+server\\b[^;\\n]*\\|\\s*socat\\b"
         ]
       },
       "events": [
@@ -455,7 +455,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:echo|printf)\\s+['\"]?shutdown\\s+sessions\\b.*\\|\\s*socat\\b"
+          "(?:echo|printf)\\s+['\"]?shutdown\\s+sessions\\b[^;\\n]*\\|\\s*socat\\b"
         ]
       },
       "events": [
@@ -475,7 +475,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:echo|printf)\\s+['\"]?disable\\s+frontend\\b.*\\|\\s*socat\\b"
+          "(?:echo|printf)\\s+['\"]?disable\\s+frontend\\b[^;\\n]*\\|\\s*socat\\b"
         ]
       },
       "events": [
@@ -495,7 +495,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:echo|printf)\\s+['\"]?shutdown\\s+frontend\\b.*\\|\\s*socat\\b"
+          "(?:echo|printf)\\s+['\"]?shutdown\\s+frontend\\b[^;\\n]*\\|\\s*socat\\b"
         ]
       },
       "events": [
@@ -515,7 +515,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\brm\\b.*\\s+['\"]?/etc/haproxy(?:/|\\b)"
+          "\\brm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+['\"]?/etc/haproxy(?:/|\\b)"
         ]
       },
       "events": [
@@ -535,7 +535,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\s+delete\\s+ingressroute\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+delete\\s+ingressroute\\b"
         ]
       },
       "events": [
@@ -555,7 +555,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\btraefik\\b.*\\b/api/|.*\\btraefik\\b.*\\b/api/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "(?i)\\bcurl\\b(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b/api/|(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\btraefik\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b/api/(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -575,7 +575,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "systemctl\\b.*?\\s+stop\\s+traefik(?:\\.service)?\\b"
+          "systemctl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+stop\\s+traefik(?:\\.service)?\\b"
         ]
       },
       "events": [

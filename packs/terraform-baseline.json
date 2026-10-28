@@ -3,7 +3,7 @@
   "name": "Terraform Baseline",
   "category": "terraform",
   "description": "Guards infrastructure-as-code operations: gates apply, destroy, and state operations behind admin access request, warns on tfstate reads that may expose secrets. Enforces the principle that no AI agent should unilaterally change production infrastructure.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "rules": [
     {
       "name": "Require access request for terraform destroy",
@@ -28,7 +28,7 @@
       "priority": 110,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["terraform\\s+apply\\b.*-auto-approve\\b"]
+        "blocked_patterns": ["terraform\\s+apply\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-auto-approve\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]

@@ -3,7 +3,7 @@
   "name": "Email Providers Guard",
   "category": "email",
   "description": "Protects transactional email providers: identity/domain deletion, template removal, suppression-list changes, and API-key deletion across SES, SendGrid, Mailgun, and Postmark. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for ses delete receipt rule set",
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/api_keys/|sendgrid\\.com/v3/api_keys/\\S+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/api_keys/|sendgrid\\.com/v3/api_keys/\\S+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/whitelabel/domains/|sendgrid\\.com/v3/whitelabel/domains/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/whitelabel/domains/|sendgrid\\.com/v3/whitelabel/domains/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/subusers/|sendgrid\\.com/v3/subusers/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/subusers/|sendgrid\\.com/v3/subusers/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$)|api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$).*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$)|api\\.mailgun\\.net/v3/domains/[^\\s/]+(?:\\s|$)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/servers/|api\\.postmarkapp\\.com/servers/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/servers/|api\\.postmarkapp\\.com/servers/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/domains/|api\\.postmarkapp\\.com/domains/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/domains/|api\\.postmarkapp\\.com/domains/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -295,7 +295,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/templates/|sendgrid\\.com/v3/templates/\\S+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/templates/|sendgrid\\.com/v3/templates/\\S+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -315,7 +315,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/(?:senders|verified_senders)/|sendgrid\\.com/v3/(?:senders|verified_senders)/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/(?:senders|verified_senders)/|sendgrid\\.com/v3/(?:senders|verified_senders)/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -335,7 +335,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/(?:suppression|asm)/"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/(?:suppression|asm)/"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/routes/|api\\.mailgun\\.net/v3/routes/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/routes/|api\\.mailgun\\.net/v3/routes/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -395,7 +395,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/lists/|api\\.mailgun\\.net/v3/lists/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/lists/|api\\.mailgun\\.net/v3/lists/[^\\s/]+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -435,7 +435,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^/]+/credentials/|api\\.mailgun\\.net/v3/domains/[^/]+/credentials/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/domains/[^/]+/credentials/|api\\.mailgun\\.net/v3/domains/[^/]+/credentials/[^\\s/]+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -455,7 +455,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/teammates/|sendgrid\\.com/v3/teammates/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/teammates/|sendgrid\\.com/v3/teammates/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -475,7 +475,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/(?:bounces|complaints|unsubscribes)/"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/[^/]+/(?:bounces|complaints|unsubscribes)/"
         ]
       },
       "events": [
@@ -495,7 +495,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*sendgrid\\.com/v3/user/webhooks/"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*sendgrid\\.com/v3/user/webhooks/"
         ]
       },
       "events": [
@@ -515,7 +515,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/senders/|api\\.postmarkapp\\.com/senders/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/senders/|api\\.postmarkapp\\.com/senders/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -535,7 +535,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/templates/|api\\.mailgun\\.net/v3/[^/]+/templates/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/[^/]+/templates/|api\\.mailgun\\.net/v3/[^/]+/templates/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -555,7 +555,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/|api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/|api\\.postmarkapp\\.com/message-streams/[^/]+/suppressions/(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -575,7 +575,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/|api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/|api\\.mailgun\\.net/v3/domains/[^/]+/webhooks/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -595,7 +595,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$)|api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$).*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$)|api\\.postmarkapp\\.com/message-streams/[\\w-]+(?:\\s|$)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -615,7 +615,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/templates/|api\\.postmarkapp\\.com/templates/[^\\s/]+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/templates/|api\\.postmarkapp\\.com/templates/[^\\s/]+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -635,7 +635,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.postmarkapp\\.com/webhooks/|api\\.postmarkapp\\.com/webhooks/\\d+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.postmarkapp\\.com/webhooks/|api\\.postmarkapp\\.com/webhooks/\\d+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [
@@ -655,7 +655,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE).*api\\.mailgun\\.net/v3/[^/]+/tags/|api\\.mailgun\\.net/v3/[^/]+/tags/\\w+.*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
+          "(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*api\\.mailgun\\.net/v3/[^/]+/tags/|api\\.mailgun\\.net/v3/[^/]+/tags/\\w+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*DELETE|--request(?:=|\\s+)DELETE)"
         ]
       },
       "events": [

@@ -3,7 +3,7 @@
   "name": "Kubernetes Baseline",
   "category": "kubernetes",
   "description": "Guards against destructive kubectl and Helm operations: namespace deletion, prod-context changes, node disruption, and secret removal. Requires admin approval via access request for the most dangerous operations; escalates others to require written justification.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request for kubectl delete on prod-named resources",
@@ -14,7 +14,7 @@
       "priority": 100,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["kubectl\\s+delete\\s+.*-(prod|production|prd)\\b"]
+        "blocked_patterns": ["kubectl\\s+delete\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-(prod|production|prd)\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -56,7 +56,7 @@
       "priority": 200,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["kubectl\\b.*--context[= ]\\S*prod"]
+        "blocked_patterns": ["kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--context[= ]\\S*prod"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]

@@ -3,7 +3,7 @@
   "name": "IaC Tools Guard",
   "category": "infrastructure",
   "description": "Protects infrastructure-as-code tools beyond Terraform: pulumi destroy and stack removal, destructive ansible runs, and atmos terraform wrappers. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for destroy",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\bdestroy(?:\\s|$)"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdestroy(?:\\s|$)"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ansible\\s+.*-m\\s+(?:shell|command)\\s+.*rm\\s+-rf"
+          "ansible\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-m\\s+(?:shell|command)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*rm\\s+-rf"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sdestroy(?:\\s|$)"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sdestroy(?:\\s|$)"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:helmfile|hf)\\b.*?\\sdestroy(?:\\s|$)"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:helmfile|hf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sdestroy(?:\\s|$)"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\bup\\s+.*(?:-y\\b|--yes\\b)"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bup\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-y\\b|--yes\\b)"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\bstate\\s+delete"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bstate\\s+delete"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\bstack\\s+rm"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bstack\\s+rm"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\bcancel\\b"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcancel\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ansible\\s+.*-m\\s+(?:shell|command)\\s+.*(?:reboot|shutdown|poweroff)"
+          "ansible\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-m\\s+(?:shell|command)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:reboot|shutdown|poweroff)"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ansible-playbook\\s+.*-i\\s+\\S+\\s+\\S+\\.ya?ml"
+          "ansible-playbook\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-i\\s+\\S+\\s+\\S+\\.ya?ml"
         ],
         "allowed_patterns": [
           "ansible-playbook\\b[^|;&]*(?:--check\\b|--limit\\b)[^;&]*$"
@@ -218,7 +218,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sdeploy(?:\\s|$)"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sdeploy(?:\\s|$)"
         ]
       },
       "events": [
@@ -238,7 +238,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sapply\\s+.*-auto-approve"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sapply\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-auto-approve"
         ]
       },
       "events": [
@@ -258,7 +258,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sclean(?:\\s|$)"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sclean(?:\\s|$)"
         ]
       },
       "events": [
@@ -278,7 +278,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\staint\\b"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\staint\\b"
         ]
       },
       "events": [
@@ -298,7 +298,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "pulumi\\b.*?\\brefresh\\s+.*(?:-y\\b|--yes\\b)"
+          "pulumi\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brefresh\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-y\\b|--yes\\b)"
         ]
       },
       "events": [
@@ -318,7 +318,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sstate\\s+rm\\b"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sstate\\s+rm\\b"
         ]
       },
       "events": [
@@ -338,7 +338,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ansible\\s+.*-e\\s+['\\\"].*(?:delete|remove|destroy|drop)"
+          "ansible\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-e\\s+['\\\"](?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:delete|remove|destroy|drop)"
         ]
       },
       "events": [
@@ -358,7 +358,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sstate\\s+mv\\b"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sstate\\s+mv\\b"
         ]
       },
       "events": [
@@ -378,7 +378,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\splan\\s+.*-destroy"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\splan\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-destroy"
         ]
       },
       "events": [
@@ -398,7 +398,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sforce-unlock\\b"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sforce-unlock\\b"
         ]
       },
       "events": [
@@ -418,7 +418,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "atmos\\b.*?\\b(?:terraform|tofu|opentofu|tf)\\b.*?\\sworkspace\\s+delete\\b"
+          "atmos\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:terraform|tofu|opentofu|tf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\sworkspace\\s+delete\\b"
         ]
       },
       "events": [

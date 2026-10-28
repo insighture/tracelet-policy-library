@@ -3,7 +3,7 @@
   "name": "Filesystem Extended",
   "category": "filesystem",
   "description": "Extended filesystem protection beyond Filesystem Baseline: rm flag variants (-r -f, --recursive --force), find -delete, shred, truncate, tar --remove-files, dd file overwrites, unlink, and copy-then-delete exfiltration patterns on sensitive paths. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for cp sensitive then delete",
@@ -170,7 +170,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "rm\\s+.*--recursive.*--force\\s+['\"\\\\]?(?:[/~]|\\$\\{?HOME\\b)|rm\\s+.*--force.*--recursive\\s+['\"\\\\]?(?:[/~]|\\$\\{?HOME\\b)"
+          "rm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--recursive(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force\\s+['\"\\\\]?(?:[/~]|\\$\\{?HOME\\b)|rm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--recursive\\s+['\"\\\\]?(?:[/~]|\\$\\{?HOME\\b)"
         ],
         "allowed_patterns": [
           "(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:/var/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:/var/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:\\$TMPDIR/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:\\$TMPDIR/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)",
@@ -449,7 +449,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "rm\\s+.*--recursive.*--force|rm\\s+.*--force.*--recursive"
+          "rm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--recursive(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force|rm\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--recursive"
         ],
         "allowed_patterns": [
           "(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:/var/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:/var/tmp/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*[rR][a-zA-Z]*f[a-zA-Z]*\\s+(?:\\$TMPDIR/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)|(?:^rm\\s+-[a-zA-Z]*f[a-zA-Z]*[rR][a-zA-Z]*\\s+(?:\\$TMPDIR/(?:[^\\s.]|\\.[^\\s.])*(?:\\s+|$))+$)",

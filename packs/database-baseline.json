@@ -3,7 +3,7 @@
   "name": "Database Baseline",
   "category": "database",
   "description": "Guards irreversible database operations: schema drops, privilege escalation, truncation, unqualified deletes, and direct prod database access. Requires admin approval via access request for DDL destruction and prod connections; requires justification for DML-without-WHERE.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request for DROP DATABASE, TABLE, or SCHEMA",
@@ -56,7 +56,7 @@
       "priority": 200,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["(psql|mysql|mongosh?)\\b.*prod"]
+        "blocked_patterns": ["(psql|mysql|mongosh?)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*prod"]
       },
       "events": ["pre_tool_use"],
       "tools": null

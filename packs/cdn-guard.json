@@ -3,7 +3,7 @@
   "name": "CDN Guard",
   "category": "cdn",
   "description": "Protects CDN and edge platforms: worker/service deletion, distribution removal, and cache purges across Cloudflare Workers, Fastly, and CloudFront. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for wrangler delete",
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-distribution\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-distribution\\b"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-key-group\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-key-group\\b"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-cache-policy\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-cache-policy\\b"
         ]
       },
       "events": [
@@ -395,7 +395,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-origin-request-policy\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-origin-request-policy\\b"
         ]
       },
       "events": [
@@ -435,7 +435,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-function\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-function\\b"
         ]
       },
       "events": [
@@ -475,7 +475,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+delete-response-headers-policy\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+delete-response-headers-policy\\b"
         ]
       },
       "events": [
@@ -515,7 +515,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\bcloudfront\\s+create-invalidation\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcloudfront\\s+create-invalidation\\b"
         ]
       },
       "events": [

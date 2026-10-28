@@ -3,7 +3,7 @@
   "name": "Messaging Guard",
   "category": "messaging",
   "description": "Protects message brokers: topic/queue deletion, consumer-group resets, exchange removal, and stream purges across Kafka, RabbitMQ, NATS, and SQS/SNS. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for kafka topics delete",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kafka-topics(?:\\.sh)?\\b.*\\s--delete\\b"
+          "kafka-topics(?:\\.sh)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--delete\\b"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "rpk\\b.*\\stopic\\s+delete\\b"
+          "rpk\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\stopic\\s+delete\\b"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kafka-consumer-groups(?:\\.sh)?\\b.*\\s--delete\\b"
+          "kafka-consumer-groups(?:\\.sh)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--delete\\b"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kafka-consumer-groups(?:\\.sh)?\\b.*\\s--reset-offsets\\b"
+          "kafka-consumer-groups(?:\\.sh)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--reset-offsets\\b"
         ]
       },
       "events": [
@@ -275,7 +275,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kafka-configs(?:\\.sh)?\\b.*\\s--alter\\b.*\\s--delete-config\\b"
+          "kafka-configs(?:\\.sh)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--alter\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--delete-config\\b"
         ]
       },
       "events": [
@@ -295,7 +295,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kafka-acls(?:\\.sh)?\\b.*\\s--remove\\b"
+          "kafka-acls(?:\\.sh)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--remove\\b"
         ]
       },
       "events": [

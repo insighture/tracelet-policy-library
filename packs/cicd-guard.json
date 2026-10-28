@@ -3,7 +3,7 @@
   "name": "CI/CD Guard",
   "category": "cicd",
   "description": "Protects CI/CD systems: deleting workflows, runners, pipelines, jobs, caches, and secrets across GitHub Actions, GitLab CI, Jenkins, and CircleCI. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for gitlab runner unregister",
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))POST\\b.*\\bdoDelete\\b|.*\\bdoDelete\\b.*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
+          "(?i)\\bcurl\\b(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))POST\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bdoDelete\\b|(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bdoDelete\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))POST\\b)"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*\\b/?repos/[^\\s/]+/[^\\s/]+/actions/secrets\\b"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b/?repos/[^\\s/]+/[^\\s/]+/actions/secrets\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*\\bvariables\\b"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bvariables\\b"
         ]
       },
       "events": [
@@ -275,7 +275,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*circleci\\.com/api/[^\\s]*\\b(?:envvar|environment-variable)\\b"
+          "curl(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*circleci\\.com/api/[^\\s]*\\b(?:envvar|environment-variable)\\b"
         ]
       },
       "events": [
@@ -315,7 +315,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*\\b/?repos/[^\\s/]+/[^\\s/]+/actions/variables\\b"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b/?repos/[^\\s/]+/[^\\s/]+/actions/variables\\b"
         ]
       },
       "events": [

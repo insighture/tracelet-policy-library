@@ -3,7 +3,7 @@
   "name": "API Gateway Guard",
   "category": "apigateway",
   "description": "Protects API gateways: API/stage/route deletion, consumer and plugin removal, and proxy undeployment across AWS API Gateway, Kong, and Apigee. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for apigateway delete rest api",
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+environments\\s+delete\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+environments\\s+delete\\b"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+organizations\\s+delete\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+organizations\\s+delete\\b"
         ]
       },
       "events": [
@@ -415,7 +415,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "deck(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:gateway\\s+)?sync\\b.*--select-tag\\b"
+          "deck(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+(?:gateway\\s+)?sync\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--select-tag\\b"
         ]
       },
       "events": [
@@ -455,7 +455,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/services|(?:localhost|127\\.0\\.0\\.1):8001/services.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/services|(?:localhost|127\\.0\\.0\\.1):8001/services(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -495,7 +495,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/routes|(?:localhost|127\\.0\\.0\\.1):8001/routes.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/routes|(?:localhost|127\\.0\\.0\\.1):8001/routes(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -535,7 +535,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/consumers|(?:localhost|127\\.0\\.0\\.1):8001/consumers.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/consumers|(?:localhost|127\\.0\\.0\\.1):8001/consumers(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -555,7 +555,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/plugins|(?:localhost|127\\.0\\.0\\.1):8001/plugins.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/plugins|(?:localhost|127\\.0\\.0\\.1):8001/plugins(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -575,7 +575,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/upstreams|(?:localhost|127\\.0\\.0\\.1):8001/upstreams.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/upstreams|(?:localhost|127\\.0\\.0\\.1):8001/upstreams(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -595,7 +595,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/.*targets|(?:localhost|127\\.0\\.0\\.1):8001/.*targets.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*targets|(?:localhost|127\\.0\\.0\\.1):8001/(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*targets(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -615,7 +615,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/certificates|(?:localhost|127\\.0\\.0\\.1):8001/certificates.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/certificates|(?:localhost|127\\.0\\.0\\.1):8001/certificates(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -635,7 +635,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/snis|(?:localhost|127\\.0\\.0\\.1):8001/snis.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/snis|(?:localhost|127\\.0\\.0\\.1):8001/snis(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -655,7 +655,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\s+.*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*(?:localhost|127\\.0\\.0\\.1):8001/|(?:localhost|127\\.0\\.0\\.1):8001/.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "curl\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:localhost|127\\.0\\.0\\.1):8001/|(?:localhost|127\\.0\\.0\\.1):8001/(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -675,7 +675,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+apis\\s+delete\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+apis\\s+delete\\b"
         ]
       },
       "events": [
@@ -695,7 +695,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+deployments\\s+undeploy\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+deployments\\s+undeploy\\b"
         ]
       },
       "events": [
@@ -715,7 +715,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+developers\\s+delete\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+developers\\s+delete\\b"
         ]
       },
       "events": [
@@ -735,7 +735,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gcloud\\b.*?\\bapigee\\s+products\\s+delete\\b"
+          "gcloud\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapigee\\s+products\\s+delete\\b"
         ]
       },
       "events": [

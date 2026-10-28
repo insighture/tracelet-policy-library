@@ -3,7 +3,7 @@
   "name": "Git Baseline",
   "category": "git",
   "description": "Guards protected branches from force-pushes and unreviewed direct pushes. Guards against accidental hard resets, dangerous untracked-file removal, and credential exposure in commits. Uses a tiered approach: require admin approval for force-push to main/master, secret detection, and pushes to protected branches; require justification for other destructive git operations.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "rules": [
     {
       "name": "Require access request for force-push to main or master",
@@ -15,8 +15,8 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\s+push\\b.*(--force|-f)\\b.*\\b(main|master)\\b",
-          "git\\s+push\\b.*\\b(main|master)\\b.*(--force|-f)\\b"
+          "git\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(--force|-f)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(main|master)\\b",
+          "git\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(main|master)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(--force|-f)\\b"
         ]
       },
       "events": ["pre_tool_use"],
@@ -45,7 +45,7 @@
       "priority": 200,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["git\\s+push\\b.*(?:^|[\\s:])(main|master|production|release)(?:$|[\\s:])"]
+        "blocked_patterns": ["git\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:^|[\\s:])(main|master|production|release)(?:$|[\\s:;&|'\"])"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -59,7 +59,7 @@
       "priority": 300,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["git\\s+push\\b.*(--force|-f)\\b"]
+        "blocked_patterns": ["git\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(--force|-f)\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -73,7 +73,7 @@
       "priority": 310,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["git\\s+push\\b.*--delete\\b"]
+        "blocked_patterns": ["git\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--delete\\b"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]
@@ -87,7 +87,7 @@
       "priority": 320,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["git\\s+clean\\b.*-[a-z]*f"]
+        "blocked_patterns": ["git\\s+clean\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-[a-z]*f"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]

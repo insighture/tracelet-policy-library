@@ -3,7 +3,7 @@
   "name": "Supabase Guard",
   "category": "database",
   "description": "Supabase CLI protection: project deletion, database resets, branch deletion, secret removal, and destructive migration commands. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for supabase db reset",
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+db\\s+shell\\s+.*\\b(DROP|TRUNCATE|DELETE|ALTER)\\b"
+          "(?i)supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+db\\s+shell\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(DROP|TRUNCATE|DELETE|ALTER)\\b"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop\\b.*--no-backup"
+          "supabase(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+stop\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--no-backup"
         ]
       },
       "events": [

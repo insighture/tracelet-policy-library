@@ -3,7 +3,7 @@
   "name": "DNS Guard",
   "category": "dns",
   "description": "Protects DNS: zone and record deletion across Cloudflare, Route 53, and generic DNS tooling. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for cloudflare api delete zone",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/zones/[^\\s]+|.*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/zones/[^\\s]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "(?i)\\bcurl\\b(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/zones/[^\\s]+|(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/zones/[^\\s]+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+delete-hosted-zone\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+delete-hosted-zone\\b"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i)\\bcurl\\b(?:.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b.*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/dns_records/[^\\s]+|.*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/dns_records/[^\\s]+.*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
+          "(?i)\\bcurl\\b(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/dns_records/[^\\s]+|(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bapi\\.cloudflare\\.com\\b[^\\s]*?/dns_records/[^\\s]+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--request(?:=|\\s+))DELETE\\b)"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "terraform\\b.*?\\s+destroy\\s+.*-target=(?:resource\\.)?cloudflare_record\\."
+          "terraform\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+destroy\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-target=(?:resource\\.)?cloudflare_record\\."
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+change-resource-record-sets\\b.*\\bDELETE\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+change-resource-record-sets\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bDELETE\\b"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+delete-health-check\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+delete-health-check\\b"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+delete-traffic-policy\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+delete-traffic-policy\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+delete-reusable-delegation-set\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+delete-reusable-delegation-set\\b"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:\\bnsupdate\\b.*\\bdelete\\b|\\bdelete\\b.*\\|\\s*\\bnsupdate\\b)"
+          "(?:\\bnsupdate\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bdelete\\b|\\bdelete\\b[^;\\n]*\\|\\s*\\bnsupdate\\b)"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\baws\\b.*?\\broute53\\s+delete-query-logging-config\\b"
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\broute53\\s+delete-query-logging-config\\b"
         ]
       },
       "events": [
@@ -235,7 +235,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bnsupdate\\b.*\\s-l\\b"
+          "\\bnsupdate\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-l\\b"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?i:\\bdig\\b.*\\b(?:axfr|ixfr)\\b)"
+          "(?i:\\bdig\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:axfr|ixfr)\\b)"
         ]
       },
       "events": [

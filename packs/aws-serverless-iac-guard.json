@@ -3,7 +3,7 @@
   "name": "AWS Serverless IaC Guard",
   "category": "infrastructure",
   "description": "Protects AWS serverless deployment tooling: teardown of CDK/SAM/Serverless Framework/Amplify stacks, and deploys that skip the normal confirmation/diff-review step straight into production. Complements Terraform Baseline/Extended and IaC Guard, which do not cover these CLIs.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for cdk destroy",
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bcdk\\s+deploy\\b.*--require-approval[=\\s]+never\\b"
+          "\\bcdk\\s+deploy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--require-approval[=\\s]+never\\b"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bsam\\s+deploy\\b.*--no-confirm-changeset\\b"
+          "\\bsam\\s+deploy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--no-confirm-changeset\\b"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\b(?:serverless|sls)\\s+deploy\\b.*--stage[=\\s]+prod(?:uction)?\\b"
+          "\\b(?:serverless|sls)\\s+deploy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--stage[=\\s]+prod(?:uction)?\\b"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bsam\\s+sync\\b.*--stack-name[=\\s]+\\S*prod\\S*\\b"
+          "\\bsam\\s+sync\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--stack-name[=\\s]+\\S*prod\\S*\\b"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bamplify\\s+push\\b.*(?:--yes\\b|\\s-y\\b)"
+          "\\bamplify\\s+push\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:--yes\\b|\\s-y\\b)"
         ]
       },
       "events": [

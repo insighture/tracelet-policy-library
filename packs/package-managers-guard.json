@@ -3,7 +3,7 @@
   "name": "Package Managers Guard",
   "category": "packages",
   "description": "Protects package registries and local package state: npm/yarn/pnpm unpublish and dist-tag changes, pip/cargo/gem yanks, and destructive global operations. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require justification for npm publish",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bnpm\\b.*?\\bpublish\\b"
+          "\\bnpm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpublish\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=true)?\\b[^;&]*$"
@@ -38,7 +38,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\byarn\\b.*?\\bpublish\\b"
+          "\\byarn\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpublish\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=true)?\\b[^;&]*$"
@@ -61,7 +61,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpnpm\\b.*?\\bpublish\\b"
+          "\\bpnpm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpublish\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=true)?\\b[^;&]*$"
@@ -84,7 +84,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bnpm\\b.*?\\bunpublish(?:\\s|$)"
+          "\\bnpm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bunpublish(?:\\s|$)"
         ]
       },
       "events": [
@@ -104,7 +104,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpip(?:3)?\\b.*?\\buninstall(?:\\s|$)"
+          "\\bpip(?:3)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\buninstall(?:\\s|$)"
         ]
       },
       "events": [
@@ -124,7 +124,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpip\\b.*?\\binstall\\s+.*(?:https?://|git\\+)"
+          "\\bpip\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\binstall\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:https?://|git\\+)"
         ]
       },
       "events": [
@@ -144,7 +144,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpip\\b.*?\\binstall\\s+.*--(?:system|target\\s*/usr)"
+          "\\bpip\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\binstall\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--(?:system|target\\s*/usr)"
         ]
       },
       "events": [
@@ -164,7 +164,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bapt(?:-get)?\\b.*?\\b(?:remove|purge|autoremove)(?:\\s|$)"
+          "\\bapt(?:-get)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:remove|purge|autoremove)(?:\\s|$)"
         ]
       },
       "events": [
@@ -184,7 +184,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\b(?:yum|dnf)\\b.*?\\b(?:remove|erase|autoremove)(?:\\s|$)"
+          "\\b(?:yum|dnf)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:remove|erase|autoremove)(?:\\s|$)"
         ]
       },
       "events": [
@@ -204,7 +204,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bcargo\\b.*?\\bpublish\\b"
+          "\\bcargo\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpublish\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=true)?\\b[^;&]*$"
@@ -227,7 +227,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bcargo\\b.*?\\byank(?:\\s|$)"
+          "\\bcargo\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\byank(?:\\s|$)"
         ]
       },
       "events": [
@@ -247,7 +247,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgem\\b.*?\\bpush\\b"
+          "\\bgem\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpush\\b"
         ]
       },
       "events": [
@@ -267,7 +267,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bbrew\\b.*?\\b(?:uninstall|remove)(?:\\s|$)"
+          "\\bbrew\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\b(?:uninstall|remove)(?:\\s|$)"
         ]
       },
       "events": [
@@ -287,7 +287,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpoetry\\b.*?\\bpublish\\b"
+          "\\bpoetry\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bpublish\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=true)?\\b[^;&]*$"
@@ -310,7 +310,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bpoetry\\b.*?\\bremove(?:\\s|$)"
+          "\\bpoetry\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bremove(?:\\s|$)"
         ]
       },
       "events": [
@@ -330,7 +330,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\b(?:mvn|mvnw)\\b.*?\\bdeploy\\b"
+          "\\b(?:mvn|mvnw)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdeploy\\b"
         ]
       },
       "events": [
@@ -350,7 +350,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\b(?:mvn|mvnw)\\s+.*release:perform\\b"
+          "\\b(?:mvn|mvnw)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*release:perform\\b"
         ]
       },
       "events": [
@@ -370,7 +370,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\b(?:gradle|gradlew)\\s+.*\\bpublish\\b"
+          "\\b(?:gradle|gradlew)\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bpublish\\b"
         ]
       },
       "events": [

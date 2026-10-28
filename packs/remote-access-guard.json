@@ -3,7 +3,7 @@
   "name": "Remote Access Guard",
   "category": "remote",
   "description": "Protects remote hosts: destructive commands over ssh, overwriting remote files via scp, and rsync --delete mirroring. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for ssh remote rm rf",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\brm\\s+-[a-zA-Z]*r[a-zA-Z]*f"
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\brm\\s+-[a-zA-Z]*r[a-zA-Z]*f"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ssh\\s+(?:\\S+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bsudo\\s+rm\\b"
+          "ssh\\s+(?:\\S+\\s+)*\\S+[@:]?\\S*\\s+['\"]?(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bsudo\\s+rm\\b"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s-[A-Za-z0-9]*r[A-Za-z0-9]*\\b.*\\s(?:(?:\\S+@)?\\S+:)?/\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-[A-Za-z0-9]*r[A-Za-z0-9]*\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/\\s*$"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/boot(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/boot(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/(?:bin|sbin)(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/(?:bin|sbin)(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/lib(?:64)?(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/lib(?:64)?(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bgit\\s+reset\\s+--hard\\b"
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bgit\\s+reset\\s+--hard\\b"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?.*\\bgit\\s+clean\\s+-[a-zA-Z]*f"
+          "ssh\\s+(?:\\S+\\s+)*(?:-[A-Za-z]+\\s+)*\\S+[@:]?\\S*\\s+['\"]?(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bgit\\s+clean\\s+-[a-zA-Z]*f"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/etc(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/etc(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/var(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/var(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "scp\\b.*\\s(?:(?:\\S+@)?\\S+:)?/usr(?:/\\S*)?\\s*$"
+          "scp\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:(?:\\S+@)?\\S+:)?/usr(?:/\\S*)?\\s*$"
         ]
       },
       "events": [
@@ -235,7 +235,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "rsync\\b.*\\s--delete(?:-[a-z-]+)?\\b"
+          "rsync\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--delete(?:-[a-z-]+)?\\b"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "rsync\\b.*\\s--del\\b"
+          "rsync\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--del\\b"
         ]
       },
       "events": [

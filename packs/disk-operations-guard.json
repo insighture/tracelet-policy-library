@@ -3,7 +3,7 @@
   "name": "Disk Operations Guard",
   "category": "filesystem",
   "description": "Guards low-level disk operations: mkfs, fdisk/parted/sgdisk partitioning, wipefs, LVM/RAID teardown, swap manipulation, and filesystem-destroying tools. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require justification for dd device",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dd\\s+.*of=['\"]?/dev/"
+          "dd\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*of=['\"]?/dev/"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dd\\s+.*if=['\"]?/dev/(?:zero|urandom|random).*of=['\"]?/dev/"
+          "dd\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*if=['\"]?/dev/(?:zero|urandom|random)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*of=['\"]?/dev/"
         ]
       },
       "events": [
@@ -161,7 +161,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mount\\s+.*--bind\\s+.*\\s+['\"]?/(?:$|[^a-z])"
+          "mount\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--bind\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+['\"]?/(?:$|[^a-z])"
         ]
       },
       "events": [
@@ -181,7 +181,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "umount\\s+.*-[a-z]*f"
+          "umount\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-[a-z]*f"
         ]
       },
       "events": [
@@ -221,7 +221,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?(?:--stop|-S)\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?(?:--stop|-S)\\b"
         ]
       },
       "events": [
@@ -241,7 +241,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?--remove\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?--remove\\b"
         ]
       },
       "events": [
@@ -261,7 +261,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?(?:--fail|-f)\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?(?:--fail|-f)\\b"
         ]
       },
       "events": [
@@ -281,7 +281,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?--zero-superblock\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?--zero-superblock\\b"
         ]
       },
       "events": [
@@ -301,7 +301,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?(?:--create|-C)\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?(?:--create|-C)\\b"
         ]
       },
       "events": [
@@ -321,7 +321,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "mdadm\\s+(?:.*\\s+)?--grow\\b"
+          "mdadm\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?--grow\\b"
         ]
       },
       "events": [
@@ -341,7 +341,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+subvolume\\s+delete\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+subvolume\\s+delete\\b"
         ]
       },
       "events": [
@@ -361,7 +361,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+device\\s+(?:remove|delete)\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+device\\s+(?:remove|delete)\\b"
         ]
       },
       "events": [
@@ -381,7 +381,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+device\\s+add\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+device\\s+add\\b"
         ]
       },
       "events": [
@@ -401,7 +401,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+balance\\s+start\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+balance\\s+start\\b"
         ]
       },
       "events": [
@@ -421,7 +421,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+check\\s+(?:.*\\s+)?--repair\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+check\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?--repair\\b"
         ]
       },
       "events": [
@@ -441,7 +441,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+rescue\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+rescue\\b"
         ]
       },
       "events": [
@@ -461,7 +461,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "btrfs\\b.*?\\s+filesystem\\s+resize\\b"
+          "btrfs\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+filesystem\\s+resize\\b"
         ]
       },
       "events": [
@@ -481,7 +481,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+remove\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+remove\\b"
         ]
       },
       "events": [
@@ -501,7 +501,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+remove_all\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+remove_all\\b"
         ]
       },
       "events": [
@@ -521,7 +521,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+wipe_table\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+wipe_table\\b"
         ]
       },
       "events": [
@@ -541,7 +541,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+clear\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+clear\\b"
         ]
       },
       "events": [
@@ -561,7 +561,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+load\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+load\\b"
         ]
       },
       "events": [
@@ -581,7 +581,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "dmsetup\\b.*?\\s+create\\b"
+          "dmsetup\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\s+create\\b"
         ]
       },
       "events": [
@@ -601,7 +601,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "nbd-client\\s+(?:.*\\s+)?-d\\b"
+          "nbd-client\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?-d\\b"
         ]
       },
       "events": [
@@ -741,7 +741,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "lvresize\\s+(?:.*\\s+)?(?:-L\\s*-|-l\\s*-|--size\\s+\\S*-)"
+          "lvresize\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?(?:-L\\s*-|-l\\s*-|--size\\s+\\S*-)"
         ]
       },
       "events": [
@@ -781,7 +781,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "lvconvert\\s+(?:.*\\s+)?--merge\\b"
+          "lvconvert\\s+(?:(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s+)?--merge\\b"
         ]
       },
       "events": [

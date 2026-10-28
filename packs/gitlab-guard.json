@@ -3,7 +3,7 @@
   "name": "GitLab Platform Guard",
   "category": "platform",
   "description": "Protects GitLab via the glab CLI and API: project deletion, release removal, and runner deregistration. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require justification for glab repo delete",
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+(?:\\s|$)"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?projects/[^/\\s]+(?:\\s|$)"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+/releases/"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?projects/[^/\\s]+/releases/"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?projects/[^/\\s]+/variables/"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?projects/[^/\\s]+/variables/"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?protected_branches/"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?protected_branches/"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?hooks/"
+          "glab(?:\\s+--?\\S+(?:\\s+\\S+)?)*\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?hooks/"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gitlab-rails\\s+runner\\b.*\\b(?:destroy_all|delete_all|\\.destroy\\b|\\.delete\\b|truncate|drop)\\b"
+          "gitlab-rails\\s+runner\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:destroy_all|delete_all|\\.destroy\\b|\\.delete\\b|truncate|drop)\\b"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "gitlab-rake\\b.*\\b(?:gitlab:)?backup:restore\\b|gitlab-rake\\b.*\\b(?:gitlab:)?db:(?:drop|reset)\\b"
+          "gitlab-rake\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:gitlab:)?backup:restore\\b|gitlab-rake\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:gitlab:)?db:(?:drop|reset)\\b"
         ]
       },
       "events": [

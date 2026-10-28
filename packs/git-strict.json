@@ -3,7 +3,7 @@
   "name": "Git Strict",
   "category": "git",
   "description": "Strict git hygiene for teams that want maximum protection: discarding working-tree changes (checkout --/restore), stash deletion, branch force-deletion, history rewrites (rebase, amend, filter-branch), reflog expiry, and indiscriminate git add. Complements Git Baseline (force-push and protected-branch rules live there). Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for stash clear",
@@ -101,7 +101,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*restore\\s+.*(?:--worktree|-W\\b)"
+          "(?:^|[^[:alnum:]_-])git\\s+(?:\\S+\\s+)*restore\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:--worktree|-W\\b)"
         ]
       },
       "events": [
@@ -141,7 +141,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\brebase\\b"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brebase\\b"
         ]
       },
       "events": [
@@ -161,7 +161,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bcommit\\s+.*--amend"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcommit\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--amend"
         ]
       },
       "events": [
@@ -181,7 +181,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bcherry-pick\\b"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcherry-pick\\b"
         ]
       },
       "events": [
@@ -201,7 +201,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bfilter-branch\\b"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bfilter-branch\\b"
         ]
       },
       "events": [
@@ -221,7 +221,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bfilter-repo\\b"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bfilter-repo\\b"
         ]
       },
       "events": [
@@ -261,7 +261,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\breflog\\s+expire"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\breflog\\s+expire"
         ]
       },
       "events": [
@@ -301,7 +301,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bgc\\s+.*--(?:aggressive|prune)"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bgc\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--(?:aggressive|prune)"
         ]
       },
       "events": [
@@ -321,7 +321,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bworktree\\s+remove"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bworktree\\s+remove"
         ]
       },
       "events": [
@@ -341,7 +341,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\badd\\s+['\"]?\\.['\"]?(?:\\s|$)"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\badd\\s+['\"]?\\.['\"]?(?:\\s|$)"
         ]
       },
       "events": [
@@ -361,7 +361,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\bsubmodule\\s+deinit"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bsubmodule\\s+deinit"
         ]
       },
       "events": [
@@ -381,7 +381,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "git\\b.*?\\badd\\s+(?:-A|--all)\\b"
+          "git\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\badd\\s+(?:-A|--all)\\b"
         ]
       },
       "events": [

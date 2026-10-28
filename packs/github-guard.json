@@ -3,7 +3,7 @@
   "name": "GitHub Platform Guard",
   "category": "platform",
   "description": "Protects GitHub via the gh CLI, API, and MCP server: repository deletion, release removal, deploy-key and webhook changes, secret deletion, and merging pull requests into the default branch. Derived from the destructive_command_guard pattern library.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require justification for gh repo delete",
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/secrets/"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/secrets/"
         ]
       },
       "events": [
@@ -235,7 +235,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/variables/"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/actions/variables/"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/hooks/"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/hooks/"
         ]
       },
       "events": [
@@ -275,7 +275,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/keys/"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/keys/"
         ]
       },
       "events": [
@@ -295,7 +295,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/releases/"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/releases/"
         ]
       },
       "events": [
@@ -315,7 +315,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))DELETE\\b"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bgh\\b[^|;&]*?\\s+api\\b.*(?:-X\\s*|--method(?:=|\\s+))(?:PUT|POST)\\b.*(?:/)?repos/[^/\\s]+/[^/\\s]+/pulls/[^/\\s]+/merge\\b"
+          "\\bgh\\b[^|;&]*?\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-X\\s*|--method(?:=|\\s+))(?:PUT|POST)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:/)?repos/[^/\\s]+/[^/\\s]+/pulls/[^/\\s]+/merge\\b"
         ]
       },
       "events": [

@@ -3,7 +3,7 @@
   "name": "Filesystem Baseline",
   "category": "filesystem",
   "description": "Guards the host filesystem from the most dangerous operations: recursive root deletion, piping remote scripts to shell, block-device overwrites, and access to system credential files. Requires admin approval via access request for these; also scopes AI file-write access to the project directory and /tmp, requiring justification for writes elsewhere.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "rules": [
     {
       "name": "Require access request for rm -rf on root or home",
@@ -39,8 +39,8 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "curl\\b.*\\|\\s*(ba)?sh\\b",
-          "wget\\b.*\\|\\s*(ba)?sh\\b"
+          "curl\\b[^;\\n]*\\|\\s*(ba)?sh\\b",
+          "wget\\b[^;\\n]*\\|\\s*(ba)?sh\\b"
         ]
       },
       "events": ["pre_tool_use"],
@@ -55,7 +55,7 @@
       "priority": 120,
       "rule_type": "command_filter",
       "rule_config": {
-        "blocked_patterns": ["dd\\b.*of=/dev/"]
+        "blocked_patterns": ["dd\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*of=/dev/"]
       },
       "events": ["pre_tool_use"],
       "tools": ["Bash"]

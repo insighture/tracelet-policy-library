@@ -3,7 +3,7 @@
   "name": "Kubernetes Extended",
   "category": "kubernetes",
   "description": "Extended Kubernetes protection beyond Kubernetes Baseline: broad kubectl delete/drain variants, destructive patches and scale-to-zero, helm rollback edge cases, and kustomize-driven deletions. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for delete namespace",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+(?:namespace|ns)\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:namespace|ns)\\b"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+.*(?:-A\\b|--all-namespaces)"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:-A\\b|--all-namespaces)"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+(?:pvc|persistentvolumeclaim)\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:pvc|persistentvolumeclaim)\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -78,7 +78,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+(?:pv|persistentvolume)\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:pv|persistentvolume)\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -101,7 +101,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+.*--force.*--grace-period=0|kubectl\\b.*?\\bdelete\\s+.*--grace-period=0.*--force"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--grace-period=0|kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--grace-period=0(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force"
         ]
       },
       "events": [
@@ -121,7 +121,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kustomize\\b.*?\\bbuild\\s+.*\\|\\s*kubectl\\b.*?\\bdelete"
+          "kustomize\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bbuild\\s+[^;\\n]*\\|\\s*kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -144,7 +144,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bkustomize\\s+.*\\|\\s*kubectl\\b.*?\\bdelete"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bkustomize\\s+[^;\\n]*\\|\\s*kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -167,7 +167,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+-k\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+-k\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -190,7 +190,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+.*--all\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--all\\b"
         ]
       },
       "events": [
@@ -210,7 +210,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdrain\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdrain\\b"
         ]
       },
       "events": [
@@ -230,7 +230,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\btaint\\s+.*:NoExecute"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\btaint\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*:NoExecute"
         ]
       },
       "events": [
@@ -250,7 +250,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+(?:deployment|statefulset|daemonset|replicaset)\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+(?:deployment|statefulset|daemonset|replicaset)\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:client|server))?\\b[^;&]*$"
@@ -273,7 +273,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bscale\\s+.*--replicas=0"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bscale\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--replicas=0"
         ]
       },
       "events": [
@@ -293,7 +293,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bapply\\s+.*--force\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bapply\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force\\b"
         ]
       },
       "events": [
@@ -313,7 +313,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bdelete\\s+-f\\s+\\.\\s*$|kubectl\\b.*?\\bdelete\\s+-f\\s+\\./|kubectl\\b.*?\\bdelete\\s+--recursive\\s+-f|kubectl\\b.*?\\bdelete\\s+-f.*--recursive"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+-f\\s+\\.\\s*$|kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+-f\\s+\\./|kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+--recursive\\s+-f|kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bdelete\\s+-f(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--recursive"
         ]
       },
       "events": [
@@ -333,7 +333,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "helm\\b.*?\\brollback\\b"
+          "helm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brollback\\b"
         ],
         "allowed_patterns": [
           "--dry-run(?:=(?:true|client|server))?\\b[^;&]*$"
@@ -356,7 +356,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "helm\\b.*?\\bupgrade\\s+.*--force"
+          "helm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bupgrade\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--force"
         ]
       },
       "events": [
@@ -376,7 +376,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "helm\\b.*?\\bupgrade\\s+.*--reset-values"
+          "helm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bupgrade\\s+(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--reset-values"
         ]
       },
       "events": [
@@ -396,7 +396,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "kubectl\\b.*?\\bcordon\\b"
+          "kubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcordon\\b"
         ]
       },
       "events": [

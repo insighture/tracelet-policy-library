@@ -3,7 +3,7 @@
   "name": "Azure Guard",
   "category": "azure",
   "description": "Protects Microsoft Azure: resource-group and VM deletion, storage account removal, AKS teardown, key vault purges, and destructive az CLI operations. Derived from the destructive_command_guard pattern library.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "rules": [
     {
       "name": "Require access request for vm delete",
@@ -15,7 +15,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bvm\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bvm\\s+delete"
         ]
       },
       "events": [
@@ -35,7 +35,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bstorage\\s+account\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bstorage\\s+account\\s+delete"
         ]
       },
       "events": [
@@ -55,7 +55,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bsql\\s+(?:server|db)\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bsql\\s+(?:server|db)\\s+delete"
         ]
       },
       "events": [
@@ -75,7 +75,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bgroup\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bgroup\\s+delete"
         ]
       },
       "events": [
@@ -95,7 +95,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\baks\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\baks\\s+delete"
         ]
       },
       "events": [
@@ -115,7 +115,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bcosmosdb\\s+(?:delete|database\\s+delete|collection\\s+delete)"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcosmosdb\\s+(?:delete|database\\s+delete|collection\\s+delete)"
         ]
       },
       "events": [
@@ -135,7 +135,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bkeyvault\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bkeyvault\\s+delete"
         ]
       },
       "events": [
@@ -155,7 +155,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bacr\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bacr\\s+delete"
         ]
       },
       "events": [
@@ -175,7 +175,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bkeyvault\\s+(?:key|secret|certificate|storage)\\s+(?:delete|purge)"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bkeyvault\\s+(?:key|secret|certificate|storage)\\s+(?:delete|purge)"
         ]
       },
       "events": [
@@ -195,7 +195,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bad\\s+sp\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bad\\s+sp\\s+delete"
         ]
       },
       "events": [
@@ -215,7 +215,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bstorage\\s+(?:blob|container)\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bstorage\\s+(?:blob|container)\\s+delete"
         ]
       },
       "events": [
@@ -235,7 +235,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bad\\s+app\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bad\\s+app\\s+delete"
         ]
       },
       "events": [
@@ -255,7 +255,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bwebapp\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bwebapp\\s+delete"
         ]
       },
       "events": [
@@ -275,7 +275,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bnetwork\\s+dns\\s+zone\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bnetwork\\s+dns\\s+zone\\s+delete"
         ]
       },
       "events": [
@@ -295,7 +295,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bfunctionapp\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bfunctionapp\\s+delete"
         ]
       },
       "events": [
@@ -315,7 +315,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bcosmosdb\\s+(?:sql|mongodb|cassandra|gremlin|table)\\s+(?:database|container|keyspace|graph)\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bcosmosdb\\s+(?:sql|mongodb|cassandra|gremlin|table)\\s+(?:database|container|keyspace|graph)\\s+delete"
         ]
       },
       "events": [
@@ -335,7 +335,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bnetwork\\s+vnet\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bnetwork\\s+vnet\\s+delete"
         ]
       },
       "events": [
@@ -355,7 +355,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bacr\\s+repository\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bacr\\s+repository\\s+delete"
         ]
       },
       "events": [
@@ -375,7 +375,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\brole\\s+assignment\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\brole\\s+assignment\\s+delete"
         ]
       },
       "events": [
@@ -395,7 +395,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bmonitor\\s+log-profiles\\s+delete"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bmonitor\\s+log-profiles\\s+delete"
         ]
       },
       "events": [
@@ -415,7 +415,7 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "az\\b.*?\\bacr\\s+repository\\s+untag"
+          "az\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*?\\bacr\\s+repository\\s+untag"
         ]
       },
       "events": [
