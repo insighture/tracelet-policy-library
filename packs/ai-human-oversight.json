@@ -1,0 +1,81 @@
+{
+  "id": "ai-human-oversight",
+  "name": "AI Human Oversight",
+  "category": "oversight",
+  "description": "Keeps a person in the loop for the agent actions that change production or skip review: unattended infrastructure apply or destroy, kubectl and Helm changes against a production context or namespace, and merging a pull request with an admin override need admin approval; skipping git hooks needs a written reason.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for unattended infrastructure apply or destroy",
+      "description": "terraform / tofu / terragrunt apply or destroy with -auto-approve, pulumi up or destroy with --yes or --skip-preview, and cdk deploy with --require-approval never skip the human review of the plan. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:terraform|tofu|terragrunt)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:apply|destroy)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-{1,2}auto-approve\\b",
+          "\\bpulumi\\s+(?:up|update|destroy)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:--yes|-y|--skip-preview|-f)\\b",
+          "\\bcdk\\s+(?:deploy|destroy)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--require-approval[= ]never\\b",
+          "\\bcdk\\s+destroy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:--force|-f)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request for kubectl and Helm changes against production",
+      "description": "A mutating kubectl or Helm command whose context, namespace, release or file name is prod or production. Requires admin approval. Read commands (get, describe, logs) are not matched.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bkubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:apply|create|delete|replace|patch|edit|scale|rollout|drain|cordon|uncordon|taint|set|label|annotate)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:^|[^a-z0-9;&|\\n])prod(?:uction)?(?:[^a-z0-9;&|\\n]|$)",
+          "\\bkubectl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:^|[^a-z0-9;&|\\n])prod(?:uction)?(?:[^a-z0-9;&|\\n]|$)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:apply|create|delete|replace|patch|edit|scale|rollout|drain|cordon|uncordon|taint|set|label|annotate)\\b",
+          "\\bhelm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:install|upgrade|uninstall|delete|rollback)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:^|[^a-z0-9;&|\\n])prod(?:uction)?(?:[^a-z0-9;&|\\n]|$)",
+          "\\bhelm\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*(?:^|[^a-z0-9;&|\\n])prod(?:uction)?(?:[^a-z0-9;&|\\n]|$)(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:install|upgrade|uninstall|delete|rollback)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to merge a pull request with an admin override",
+      "description": "gh pr merge --admin bypasses branch protection: required reviews and required checks. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\s+pr\\s+merge\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--admin\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to skip git hooks",
+      "description": "--no-verify, an empty core.hooksPath or HUSKY=0 skip the pre-commit and pre-push checks a team relies on. Requires a written reason.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgit\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:commit|push|merge|rebase|am|cherry-pick)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--no-verify\\b",
+          "\\bgit\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*-c\\s*core\\.hookspath=",
+          "\\bhusky=0\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bgit\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

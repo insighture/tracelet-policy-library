@@ -1,0 +1,57 @@
+{
+  "id": "ai-data-protection",
+  "name": "AI Data Protection",
+  "category": "privacy",
+  "description": "Protects personal data around AI tools: redacts emails, phone numbers, national, payment, passport, birth-date and health identifiers from prompts, tool inputs and tool outputs before they are stored, and checks pasted or tool-captured images for the same data. IP addresses, names and addresses are left out by default; add them to the rule if your organisation treats them as personal data in developer work.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Redact personal data in prompts, tool inputs and tool outputs",
+      "description": "Scans user prompts, tool call inputs and tool outputs for personal data and redacts it before the event is stored. The tool call itself proceeds unchanged.",
+      "action": "redact",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 100,
+      "rule_type": "pii_redact",
+      "rule_config": {
+        "redaction_categories": [
+          "EMAIL",
+          "PHONE",
+          "SSN",
+          "CREDIT_CARD",
+          "IBAN",
+          "PASSPORT",
+          "DATE_OF_BIRTH",
+          "HEALTH_ID",
+          "MEDICAL_RECORD"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use", "post_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Gate images that contain personal data",
+      "description": "OCRs pasted images and images passed to or returned by tools, and matches the same personal-data categories. A hook cannot change image pixels, so the organisation's enforcement level decides the outcome: justify asks the person to paste a redacted image or give a reason, enforcing stops the prompt with a crop-and-resubmit message, monitor only records it. Fails open if the image scanner is unavailable.",
+      "action": "block",
+      "fail_mode": "open",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "image_pii",
+      "rule_config": {
+        "redaction_categories": [
+          "EMAIL",
+          "PHONE",
+          "SSN",
+          "CREDIT_CARD",
+          "IBAN",
+          "PASSPORT",
+          "DATE_OF_BIRTH",
+          "HEALTH_ID",
+          "MEDICAL_RECORD"
+        ]
+      },
+      "events": ["user_prompt", "pre_tool_use", "post_tool_use"],
+      "tools": null
+    }
+  ]
+}

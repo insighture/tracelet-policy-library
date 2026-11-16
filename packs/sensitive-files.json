@@ -1,0 +1,121 @@
+{
+  "id": "sensitive-files",
+  "name": "Sensitive Files",
+  "category": "secrets",
+  "description": "Gates AI agent reads and writes of credential and key material: private keys and keystores, cloud and cluster credentials, registry, VCS and database credential files need admin approval; environment files, Terraform state and project registry config need a written reason. Pair it with the sensitive-path matcher set to block for the ISO 27001 / 42001 readiness plan.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for private keys and keystores",
+      "description": "SSH private keys, TLS private keys, PKCS#12 / Java keystores, PuTTY keys and GnuPG secret keyrings let anyone who reads them impersonate a person or a service. Requires admin approval before an AI agent reads or writes one. Public keys (*.pub) and certificates are not matched.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.ssh/id_rsa",
+          "**/.ssh/id_dsa",
+          "**/.ssh/id_ecdsa",
+          "**/.ssh/id_ecdsa_sk",
+          "**/.ssh/id_ed25519",
+          "**/.ssh/id_ed25519_sk",
+          "**/*.key",
+          "**/key.pem",
+          "**/*-key.pem",
+          "**/*_key.pem",
+          "**/privkey*.pem",
+          "**/*.p12",
+          "**/*.pfx",
+          "**/*.jks",
+          "**/*.keystore",
+          "**/*.ppk",
+          "**/.gnupg/private-keys-v1.d/**",
+          "**/.gnupg/secring.gpg"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request for cloud and cluster credentials",
+      "description": "AWS, Google Cloud and Azure credential and token caches, kubeconfig, Vault and Terraform Cloud tokens, and the Docker credential file grant direct access to infrastructure. Requires admin approval before an AI agent reads or writes one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.aws/credentials",
+          "**/.aws/sso/cache/*.json",
+          "**/.aws/cli/cache/*.json",
+          "**/.config/gcloud/application_default_credentials.json",
+          "**/.config/gcloud/credentials.db",
+          "**/.config/gcloud/access_tokens.db",
+          "**/.config/gcloud/legacy_credentials/**",
+          "**/.azure/accessTokens.json",
+          "**/.azure/msal_token_cache.json",
+          "**/.azure/msal_token_cache.bin",
+          "**/.kube/config",
+          "**/.vault-token",
+          "**/.terraform.d/credentials.tfrc.json",
+          "**/.docker/config.json"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request for registry, VCS and database credential files",
+      "description": "Files that store passwords and tokens for package registries, git hosts and databases (.netrc, .git-credentials, the GitHub CLI token file, .pgpass, .my.cnf, .pypirc, gem and cargo credentials). Requires admin approval before an AI agent reads or writes one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 120,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.netrc",
+          "**/.git-credentials",
+          "**/.config/gh/hosts.yml",
+          "**/.pgpass",
+          "**/.my.cnf",
+          "**/.pypirc",
+          "**/.gem/credentials",
+          "**/.cargo/credentials",
+          "**/.cargo/credentials.toml"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for environment files and infrastructure state",
+      "description": "Environment files, Terraform state and project-level registry config often hold secrets but are also read in ordinary work. Requires a written reason before an AI agent reads or writes one. Templates such as .env.example are not matched.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 200,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.env",
+          "**/.env.local",
+          "**/.env.development.local",
+          "**/.env.production",
+          "**/.env.production.local",
+          "**/.env.prod",
+          "**/.env.staging",
+          "**/*.tfstate",
+          "**/*.tfstate.backup",
+          "**/.npmrc",
+          "**/.yarnrc.yml"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

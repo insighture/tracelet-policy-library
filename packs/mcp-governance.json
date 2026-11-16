@@ -1,0 +1,82 @@
+{
+  "id": "mcp-governance",
+  "name": "MCP Governance",
+  "category": "mcp",
+  "description": "A conservative starting template for MCP tool governance on every server: destructive MCP tools (delete, destroy, purge, truncate, drop, trash, terminate) and MCP calls that reach credential directories need admin approval, and MCP tools that merge, deploy, publish or run SQL need a written reason. Tailor it per server from the policy page once installed.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request for destructive MCP tools",
+      "description": "MCP tools whose name says they delete, destroy, purge, truncate, drop, trash, wipe or terminate something make changes that are hard or impossible to undo. Requires admin approval before an AI agent calls one, on any MCP server.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_tools": [
+          "mcp__*__*delete*",
+          "mcp__*__*Delete*",
+          "mcp__*__*destroy*",
+          "mcp__*__*Destroy*",
+          "mcp__*__*purge*",
+          "mcp__*__*truncate*",
+          "mcp__*__drop*",
+          "mcp__*__*_drop*",
+          "mcp__*__*trash*",
+          "mcp__*__*Trash*",
+          "mcp__*__*wipe*",
+          "mcp__*__*terminate*"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request for MCP calls that reach credential directories",
+      "description": "A filesystem-style MCP server can read SSH keys, cloud credentials and kubeconfig as easily as a shell can. Requires admin approval when an MCP call's arguments name a path inside one of those directories.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 110,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.ssh/**",
+          "**/.aws/**",
+          "**/.config/gcloud/**",
+          "**/.azure/**",
+          "**/.kube/**",
+          "**/.gnupg/**",
+          "**/.netrc",
+          "**/.git-credentials",
+          "**/.vault-token",
+          "**/.docker/config.json"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for MCP tools that merge, deploy, publish or run SQL",
+      "description": "Merging a pull or merge request, deploying, publishing a package or running SQL through an MCP server changes shared systems. Requires a written reason before an AI agent calls one. Read tools such as get_deployment or get_merge_request are not matched.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 200,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_tools": [
+          "mcp__*__merge_*",
+          "mcp__*__deploy*",
+          "mcp__*__*_deploy",
+          "mcp__*__publish*",
+          "mcp__*__*execute_sql*",
+          "mcp__*__*apply_migration*"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}

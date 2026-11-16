@@ -368,6 +368,38 @@
       "description": "Protects native AWS CloudWatch observability: alarm deletion/silencing, dashboard removal, log-group subscription-filter removal (a common way to cut a log group off from a SIEM), and retention-policy changes. Complements AWS Extended, which only covers log-group/log-stream deletion. Monitoring Guard covers third-party tools (Datadog, Prometheus, Grafana, etc.), not native CloudWatch.",
       "version": "1.0.0",
       "rule_count": 7
+    },
+    {
+      "id": "sensitive-files",
+      "name": "Sensitive Files",
+      "category": "secrets",
+      "description": "Gates AI agent reads and writes of credential and key material: private keys and keystores, cloud and cluster credentials, registry, VCS and database credential files need admin approval; environment files, Terraform state and project registry config need a written reason. Pair it with the sensitive-path matcher set to block for the ISO 27001 / 42001 readiness plan.",
+      "version": "1.0.0",
+      "rule_count": 4
+    },
+    {
+      "id": "mcp-governance",
+      "name": "MCP Governance",
+      "category": "mcp",
+      "description": "A conservative starting template for MCP tool governance on every server: destructive MCP tools (delete, destroy, purge, truncate, drop, trash, terminate) and MCP calls that reach credential directories need admin approval, and MCP tools that merge, deploy, publish or run SQL need a written reason. Tailor it per server from the policy page once installed.",
+      "version": "1.0.0",
+      "rule_count": 3
+    },
+    {
+      "id": "ai-data-protection",
+      "name": "AI Data Protection",
+      "category": "privacy",
+      "description": "Protects personal data around AI tools: redacts emails, phone numbers, national, payment, passport, birth-date and health identifiers from prompts, tool inputs and tool outputs before they are stored, and checks pasted or tool-captured images for the same data. IP addresses, names and addresses are left out by default; add them to the rule if your organisation treats them as personal data in developer work.",
+      "version": "1.0.0",
+      "rule_count": 2
+    },
+    {
+      "id": "ai-human-oversight",
+      "name": "AI Human Oversight",
+      "category": "oversight",
+      "description": "Keeps a person in the loop for the agent actions that change production or skip review: unattended infrastructure apply or destroy, kubectl and Helm changes against a production context or namespace, and merging a pull request with an admin override need admin approval; skipping git hooks needs a written reason.",
+      "version": "1.0.0",
+      "rule_count": 4
     }
   ]
 }

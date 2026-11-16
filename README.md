@@ -224,10 +224,33 @@ The `*-guard` and `*-extended` packs are derived from the pattern library of
 library's schema and Go RE2 regex syntax. When editing them, bump the pack
 version in both the pack file and `index.json`.
 
+## Readiness-plan packs (ISO/IEC 27001 and 42001)
+
+Tracelet's ISO readiness plans install these packs by id
+(`api/internal/compliance/catalog/baselines/*.json` in the tracelet repo). A
+plan item whose pack is missing from `index.json` fails with
+`PACK_UNAVAILABLE`, so **never rename or remove one of these ids**. Once
+installed org-wide, each pack meets the precondition next to it. Keep that
+true when you edit a pack:
+
+| Pack | Precondition | What the precondition checks |
+|------|--------------|------------------------------|
+| `secrets-baseline` | P-SECRETS-RULE | `secret_detection` rules with `block` (fail-closed), `request_access` or `redact` covering `user_prompt` and `pre_tool_use` (one rule, or one per event) |
+| `git-baseline` | P-DESTRUCTIVE | a `command_filter` rule with `block` or `request_access` |
+| `sensitive-files` | P-PATHS | a `file_access` rule with `block` or `request_access` |
+| `mcp-governance` | P-MCP-FILTER | an `mcp_filter` rule with `block`, `approve`, `justify`, `request_access` or `redact` |
+| `ai-data-protection` | P-PII-RULE | one `pii_redact` rule (`redact` or `block`) covering `user_prompt`, `pre_tool_use` and `post_tool_use`, and an `image_pii` rule (`redact` or `block`) |
+| `ai-human-oversight` | P-OVERSIGHT | a rule with `request_access` or `justify` on `pre_tool_use` |
+
+`ai-data-protection`'s `image_pii` rule uses `block` on purpose: a hook cannot
+change image pixels, so the organisation's enforcement level decides what a
+match does (justify asks for a redacted image or a reason, enforcing stops the
+prompt).
+
 ---
 
 ## Category set
 
-`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system`
+`kubernetes` · `docker` · `aws` · `git` · `secrets` · `database` · `terraform` · `filesystem` · `gcp` · `azure` · `cicd` · `messaging` · `search` · `backup` · `dns` · `cdn` · `monitoring` · `payment` · `platform` · `email` · `featureflags` · `loadbalancer` · `apigateway` · `infrastructure` · `packages` · `remote` · `system` · `mcp` · `privacy` · `oversight`
 
-The dashboard's category filter and icon maps (`governance.policy.tool-policies.tsx` in the tracelet repo) must list every category used here.
+The dashboard's category filter and icon maps (`dashboard/app/components/policy/policy-packs.tsx` in the tracelet repo) must list every category used here.
