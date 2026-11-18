@@ -1,0 +1,438 @@
+{
+  "id": "ai-risk-governance",
+  "name": "AI Risk Governance",
+  "category": "system",
+  "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage, public AI APIs and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "name": "Require access request to start an AI agent with permission checks or sandbox disabled",
+      "description": "Flags such as --dangerously-skip-permissions, --yolo and danger-full-access let an agent run any command and edit any file without asking. That removes the human approval step the framework relies on. Requires admin approval. Run the agent in its normal permission mode instead.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 100,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bclaude\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--dangerously-skip-permissions\\b",
+          "\\bclaude\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--permission-mode[=\\s]+bypasspermissions\\b",
+          "\\bcodex\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--dangerously-bypass-approvals-and-sandbox\\b",
+          "\\bcodex\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--sandbox[=\\s]+danger-full-access\\b",
+          "\\b(?:codex|gemini|qwen)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--yolo\\b",
+          "\\bcursor-agent\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--force\\b",
+          "\\bcopilot\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--allow-all-tools\\b",
+          "\\baider\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--yes-always\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to disable endpoint protection or the host firewall",
+      "description": "Turning off Microsoft Defender, Gatekeeper, SIP, SELinux, the host firewall or an EDR agent, or adding antivirus exclusions, weakens the managed endpoint baseline. Requires admin approval. Ask IT for a scoped exception instead of switching the control off.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "critical",
+      "priority": 110,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bset-mppreference\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-disable(?:realtimemonitoring|ioavprotection|behaviormonitoring|scriptscanning|blockatfirstseen)\\b",
+          "\\badd-mppreference\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-exclusion(?:path|process|extension)\\b",
+          "\\bset-netfirewallprofile\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-enabled\\s+\\$?false\\b",
+          "\\bnetsh\\s+advfirewall\\s+set\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bstate\\s+off\\b",
+          "\\bsc(?:\\.exe)?\\s+(?:stop|delete|config)\\s+(?:windefend|sense|mpssvc)\\b",
+          "\\bset-executionpolicy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:bypass|unrestricted)\\b",
+          "\\bspctl\\s+--(?:master|global)-disable\\b",
+          "\\bcsrutil\\s+disable\\b",
+          "\\bufw\\s+disable\\b",
+          "\\bsetenforce\\s+0\\b",
+          "\\bsystemctl\\s+(?:stop|disable|mask)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:falcon-sensor|sentinelone|mdatp|auditd|osqueryd|wazuh-agent|clamav-daemon)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to add or run an MCP server",
+      "description": "An MCP server gives the agent new tools and new data paths, and an unverified one can carry malicious code. Requires a written reason before an agent registers one or runs one from a package runner. Use servers from the approved integrations register.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 200,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:claude|codex|gemini|qwen|cursor-agent|copilot|amp|goose)\\s+mcp\\s+(?:add[a-z-]*|install|import)\\b",
+          "\\b(?:npx|bunx|uvx|pnpm\\s+dlx|pipx\\s+run)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*[@/\\s](?:[a-z0-9._-]*-)?mcp(?:-[a-z0-9._-]+)?(?:@[a-z0-9._-]+)?(?:\\s|$|[\"'])",
+          "\\b(?:npx|bunx|uvx|pnpm\\s+dlx|pipx\\s+run)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*modelcontextprotocol"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to install editor extensions from the command line",
+      "description": "Editor extensions, including AI assistants, can read open files, the clipboard and the terminal. Requires a written reason before an agent installs one. Use extensions from the approved AI tools register.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 210,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:code|code-insiders|cursor|windsurf|codium)\\s(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*--install-extension\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to download or run local AI models",
+      "description": "Model files from public hubs are unverified third-party components and can be large. Requires a written reason before an agent pulls or runs one. Name the model and where it comes from.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 220,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bollama\\s+(?:pull|run|create)\\b",
+          "\\b(?:huggingface-cli|hf)\\s+download\\b",
+          "\\bgit\\s+clone\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bhuggingface\\.co/",
+          "\\bdocker\\s+model\\s+(?:pull|run)\\b",
+          "\\blms\\s+get\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to install packages from a custom index, URL or git source",
+      "description": "Installing from a URL, a git source or a non-default index skips the registry checks that normal installs get, which is how dependency-confusion and typosquat attacks arrive. Requires a written reason. If your organisation runs a private registry, add it to the rule's allowed_patterns after install.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 230,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:pip3?|uv\\s+pip)\\s+install\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:--index-url|--extra-index-url|-i)[=\\s]",
+          "\\b(?:pip3?|uv\\s+pip)\\s+install\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:git\\+|https?://)[^\\s]",
+          "\\b(?:npm|pnpm|yarn|bun)\\s+(?:install|i|add)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:git\\+|git://|https?://|github:)[^\\s]",
+          "\\b(?:npm|pnpm|yarn)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--registry[=\\s]"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Warn when TLS certificate verification is turned off",
+      "description": "Turning off certificate checks lets a network attacker read or change what is downloaded. Records a warning and allows the command. Fix the certificate chain instead of disabling the check.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 240,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bcurl\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--insecure\\b",
+          "\\bwget\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--no-check-certificate\\b",
+          "\\bpip3?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--trusted-host\\b",
+          "\\bhttp\\.sslverify\\s*=?\\s*false\\b",
+          "\\bgit_ssl_no_verify\\s*=\\s*(?:1|true)\\b",
+          "\\bnode_tls_reject_unauthorized\\s*=\\s*[\"']?0\\b",
+          "\\bstrict-ssl\\s*(?:=|\\s)\\s*false\\b",
+          "\\s-skipcertificatecheck\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to send data to public paste or file-drop services",
+      "description": "Paste sites, file-drop services and request catchers publish or hand over whatever is sent to them. Company or client code, logs and documents must not go there. Requires admin approval. Share through the approved company or client channel instead.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 300,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|nc|ncat)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:pastebin\\.com|paste\\.ee|hastebin\\.com|dpaste\\.(?:com|org)|ix\\.io|0x0\\.st|termbin\\.com|transfer\\.sh|file\\.io|bashupload\\.com|catbox\\.moe|gofile\\.io|tmpfiles\\.org|temp\\.sh|sprunge\\.us|paste\\.rs|webhook\\.site|requestbin\\.com|pipedream\\.net)",
+          "\\bgh\\s+gist\\s+create\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to copy data to personal cloud storage tools",
+      "description": "rclone and personal-drive CLIs move files to storage outside company and client control, which breaks the separation between environments. Requires a written reason that names the destination and confirms it is an approved transfer method.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 310,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\brclone\\s+(?:copy|copyto|sync|move|moveto|bisync)\\b",
+          "\\b(?:gdrive|dbxcli)\\s+(?:files\\s+)?(?:upload|put|import)\\b",
+          "\\b(?:megaput|mega-put|megacopy|mega-sync)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for direct calls to public AI provider APIs",
+      "description": "Calling a public AI API from the shell sends prompt data to a provider outside the approved tools and usually uses an unmanaged key, with no spend limit. Requires a written reason. Use the approved AI tool or the company-managed gateway instead.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 320,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\b(?:curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:api\\.openai\\.com|api\\.anthropic\\.com|generativelanguage\\.googleapis\\.com|api\\.mistral\\.ai|api\\.groq\\.com|api\\.deepseek\\.com|openrouter\\.ai|api\\.together\\.(?:xyz|ai)|api\\.perplexity\\.ai|api\\.cohere\\.(?:ai|com)|api\\.x\\.ai|api\\.fireworks\\.ai|api\\.replicate\\.com|api-inference\\.huggingface\\.co)"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request to make a repository public",
+      "description": "Creating a public repository or switching one to public exposes company or client source code to everyone. Requires admin approval.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 330,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\s+repo\\s+create\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--public\\b",
+          "\\bgh\\s+repo\\s+edit\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--visibility[=\\s]+public\\b",
+          "\\bglab\\s+repo\\s+create\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s--public\\b",
+          "\\bgh\\s+api\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:private=false|visibility=public)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to add or repoint a git remote",
+      "description": "A new or changed remote can send client source code to a repository outside the engagement. Requires a written reason that names the destination. Pushing to a remote that already exists is not matched.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 340,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgit\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bremote\\s+(?:add|set-url)\\b",
+          "\\bgit\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bpush\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:https?://|ssh://|git@)[^\\s]"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for prompts that carry confidentiality markings",
+      "description": "Text marked client confidential, strictly confidential, internal use only, not for distribution or under NDA is restricted data. Requires a written reason before the prompt is sent to the AI tool. Confirm the client or data owner permits AI use for this material, or remove it from the prompt.",
+      "action": "justify",
+      "fail_mode": "open",
+      "severity": "medium",
+      "priority": 350,
+      "rule_type": "content_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "(?i)\\b(?:strictly|highly|client|company|commercial)[\\s-]+confidential\\b",
+          "(?i)\\b(?:internal\\s+use\\s+only|do\\s+not\\s+distribute|not\\s+for\\s+(?:external\\s+)?distribution)\\b",
+          "(?i)\\b(?:attorney[\\s-]+client\\s+privileged?|covered\\s+by\\s+(?:an?\\s+)?nda|under\\s+nda)\\b"
+        ]
+      },
+      "events": ["user_prompt"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to sign in to an account from an agent session",
+      "description": "A new sign-in or account switch can attach a personal or wrong-client account, and gives the agent that account's access. Requires a written reason that names the account. Use the company or client identity assigned to the engagement.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 400,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\bgh\\s+auth\\s+(?:login|switch|refresh)\\b",
+          "\\bgcloud\\s+auth\\s+(?:login|application-default\\s+login|activate-service-account)\\b",
+          "\\baz\\s+login\\b",
+          "\\b(?:npm|pnpm|yarn)\\s+(?:login|adduser)\\b",
+          "\\bdocker\\s+login\\b",
+          "\\b(?:huggingface-cli\\s+login|hf\\s+auth\\s+login)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification for MCP tools that send messages or email",
+      "description": "Sending email, chat messages or notifications through an MCP server speaks for the person and cannot be recalled. Requires a written reason before an agent sends one. Drafting is not matched.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 410,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_tools": [
+          "mcp__*__*send*",
+          "mcp__*__*Send*",
+          "mcp__*__*post_message*",
+          "mcp__*__*postMessage*"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require access request for MCP tools that share files or grant access",
+      "description": "Sharing a file, inviting a user, adding a collaborator or creating a token through an MCP server widens who can reach company or client data. Requires admin approval before an agent calls one.",
+      "action": "request_access",
+      "fail_mode": "closed",
+      "severity": "high",
+      "priority": 420,
+      "rule_type": "mcp_filter",
+      "rule_config": {
+        "blocked_tools": [
+          "mcp__*__share_*",
+          "mcp__*__*_share",
+          "mcp__*__*share_file*",
+          "mcp__*__*add_collaborator*",
+          "mcp__*__*add_member*",
+          "mcp__*__*invite*",
+          "mcp__*__*grant*",
+          "mcp__*__*create_token*",
+          "mcp__*__*create_api_key*"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to change AI agent settings, permissions or MCP configuration",
+      "description": "These files decide which tools, hooks, permissions and MCP servers an agent has. An agent that edits them can widen its own access. Requires a written reason before an agent writes one. Reading is not matched.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 500,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.claude/settings.json",
+          "**/.claude/settings.local.json",
+          "**/.claude.json",
+          "**/.mcp.json",
+          "**/.cursor/mcp.json",
+          "**/.vscode/mcp.json",
+          "**/.codex/config.toml",
+          "**/.gemini/settings.json",
+          "**/.codeium/windsurf/mcp_config.json",
+          "**/.continue/config.json",
+          "**/.continue/config.yaml",
+          "**/claude_desktop_config.json"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Write", "Edit", "MultiEdit", "NotebookEdit"]
+    },
+    {
+      "name": "Warn when an agent writes to persistent memory or standing instruction files",
+      "description": "Memory and instruction files are loaded into every later session, so wrong or planted content there keeps steering the agent. Records a warning and allows the write, so each change has an audit record to review.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 510,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/CLAUDE.md",
+          "**/CLAUDE.local.md",
+          "**/AGENTS.md",
+          "**/GEMINI.md",
+          "**/.cursorrules",
+          "**/.cursor/rules/**",
+          "**/.windsurfrules",
+          "**/.github/copilot-instructions.md",
+          "**/.claude/projects/*/memory/**",
+          "**/.claude/agents/**",
+          "**/.claude/skills/**"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": ["Write", "Edit", "MultiEdit", "NotebookEdit"]
+    },
+    {
+      "name": "Warn when an agent opens stored AI conversation logs",
+      "description": "Saved transcripts and prompt history can hold sensitive prompts, file contents and output from earlier work, sometimes for another client. Records a warning and allows the access.",
+      "action": "warn",
+      "fail_mode": "open",
+      "severity": "low",
+      "priority": 520,
+      "rule_type": "file_access",
+      "rule_config": {
+        "blocked_paths": [
+          "**/.claude/projects/**/*.jsonl",
+          "**/.claude/history.jsonl",
+          "**/.codex/sessions/**",
+          "**/.codex/history.jsonl",
+          "**/.aider.chat.history.md",
+          "**/.aider.input.history"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to provision paid AI cloud capacity",
+      "description": "Provisioned model throughput, hosted model endpoints, training jobs and AI service accounts bill for as long as they exist. Requires a written reason that names the budget owner before an agent creates one.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 600,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bbedrock\\s+create-(?:provisioned-model-throughput|model-customization-job|custom-model-deployment)\\b",
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bsagemaker\\s+create-(?:endpoint|training-job|notebook-instance|hyper-parameter-tuning-job|processing-job|domain)\\b",
+          "\\baz\\s+cognitiveservices\\s+account\\s+(?:create|deployment\\s+create)\\b",
+          "\\baz\\s+ml\\s+(?:compute|online-endpoint|online-deployment|job)\\s+create\\b",
+          "\\bgcloud\\s+(?:beta\\s+|alpha\\s+)?ai\\s+(?:endpoints\\s+(?:create|deploy-model)|custom-jobs\\s+create|hp-tuning-jobs\\s+create|index-endpoints\\s+create)\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    },
+    {
+      "name": "Require justification to create or print long-lived keys and tokens",
+      "description": "Access keys, API keys and service-account keys made outside central key management are unowned, unbudgeted and do not expire. Printing a token puts it in the AI context. Requires a written reason. Use short-lived credentials or a centrally issued key.",
+      "action": "justify",
+      "fail_mode": "closed",
+      "severity": "medium",
+      "priority": 610,
+      "rule_type": "command_filter",
+      "rule_config": {
+        "blocked_patterns": [
+          "\\baws\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\biam\\s+create-access-key\\b",
+          "\\bgcloud\\s+(?:beta\\s+|alpha\\s+)?services\\s+api-keys\\s+create\\b",
+          "\\bgcloud\\s+iam\\s+service-accounts\\s+keys\\s+create\\b",
+          "\\baz\\s+cognitiveservices\\s+account\\s+keys\\s+(?:list|regenerate)\\b",
+          "\\baz\\s+ad\\s+(?:sp|app)\\s+credential\\s+reset\\b",
+          "\\bgh\\s+auth\\s+token\\b"
+        ]
+      },
+      "events": ["pre_tool_use"],
+      "tools": null
+    }
+  ]
+}
