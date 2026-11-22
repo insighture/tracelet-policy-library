@@ -3,7 +3,7 @@
   "name": "AI Risk Governance",
   "category": "system",
   "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage, public AI APIs and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "rules": [
     {
       "name": "Require access request to start an AI agent with permission checks or sandbox disabled",
@@ -38,17 +38,27 @@
       "rule_type": "command_filter",
       "rule_config": {
         "blocked_patterns": [
-          "\\bset-mppreference\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-disable(?:realtimemonitoring|ioavprotection|behaviormonitoring|scriptscanning|blockatfirstseen)\\b",
+          "\\bset-mppreference\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-disable(?:realtimemonitoring|ioavprotection|behaviormonitoring|scriptscanning|blockatfirstseen|intrusionpreventionsystem|archivescanning)\\b",
           "\\badd-mppreference\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-exclusion(?:path|process|extension)\\b",
-          "\\bset-netfirewallprofile\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-enabled\\s+\\$?false\\b",
+          "\\bset-netfirewallprofile\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-enabled\\s+(?:\\$?false|0)\\b",
           "\\bnetsh\\s+advfirewall\\s+set\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bstate\\s+off\\b",
+          "\\bnetsh\\s+advfirewall\\s+set\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\bfirewallpolicy\\s+allowinbound\\b",
           "\\bsc(?:\\.exe)?\\s+(?:stop|delete|config)\\s+(?:windefend|sense|mpssvc)\\b",
+          "\\bnet1?\\s+stop\\s+(?:windefend|sense|mpssvc)\\b",
+          "\\b(?:stop-service|set-service)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:windefend|sense|mpssvc)\\b",
+          "\\b(?:powershell|pwsh)(?:\\.exe)?\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-(?:executionpolicy|ep)\\s+(?:bypass|unrestricted)\\b",
+          "\\breg(?:\\.exe)?\\s+add\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:disableantispyware|disableantivirus|disablerealtimemonitoring)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s/d\\s+1\\b",
+          "\\b(?:set-itemproperty|new-itemproperty)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:disableantispyware|disableantivirus)\\b",
           "\\bset-executionpolicy\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:bypass|unrestricted)\\b",
           "\\bspctl\\s+--(?:master|global)-disable\\b",
           "\\bcsrutil\\s+disable\\b",
           "\\bufw\\s+disable\\b",
-          "\\bsetenforce\\s+0\\b",
-          "\\bsystemctl\\s+(?:stop|disable|mask)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:falcon-sensor|sentinelone|mdatp|auditd|osqueryd|wazuh-agent|clamav-daemon)\\b"
+          "\\bsetenforce\\s+(?:0|permissive)\\b",
+          "\\bselinux=(?:disabled|permissive)\\b",
+          "\\b(?:iptables|ip6tables)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s(?:-f|--flush)\\b",
+          "\\b(?:iptables|ip6tables)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\s-p\\s+(?:input|forward)\\s+accept\\b",
+          "\\bnft\\s+flush\\s+ruleset\\b",
+          "\\bsystemctl\\s+(?:stop|disable|mask)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:falcon-sensor|sentinelone|mdatp|auditd|osqueryd|wazuh-agent|clamav-daemon|firewalld|ufw|apparmor|nftables)\\b"
         ]
       },
       "events": ["pre_tool_use"],
