@@ -2,8 +2,8 @@
   "id": "ai-risk-governance",
   "name": "AI Risk Governance",
   "category": "system",
-  "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage, public AI APIs and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
-  "version": "1.1.0",
+  "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
+  "version": "1.2.0",
   "rules": [
     {
       "name": "Require access request to start an AI agent with permission checks or sandbox disabled",
@@ -190,22 +190,6 @@
           "\\brclone\\s+(?:copy|copyto|sync|move|moveto|bisync)\\b",
           "\\b(?:gdrive|dbxcli)\\s+(?:files\\s+)?(?:upload|put|import)\\b",
           "\\b(?:megaput|mega-put|megacopy|mega-sync)\\b"
-        ]
-      },
-      "events": ["pre_tool_use"],
-      "tools": null
-    },
-    {
-      "name": "Require justification for direct calls to public AI provider APIs",
-      "description": "Calling a public AI API from the shell sends prompt data to a provider outside the approved tools and usually uses an unmanaged key, with no spend limit. Requires a written reason. Use the approved AI tool or the company-managed gateway instead.",
-      "action": "justify",
-      "fail_mode": "closed",
-      "severity": "medium",
-      "priority": 320,
-      "rule_type": "command_filter",
-      "rule_config": {
-        "blocked_patterns": [
-          "\\b(?:curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm)\\b(?:[^;&|\\n]|'[^']*'|\"[^\"]*\"|[0-9]*[<>]&[0-9-]*|&>)*\\b(?:api\\.openai\\.com|api\\.anthropic\\.com|generativelanguage\\.googleapis\\.com|api\\.mistral\\.ai|api\\.groq\\.com|api\\.deepseek\\.com|openrouter\\.ai|api\\.together\\.(?:xyz|ai)|api\\.perplexity\\.ai|api\\.cohere\\.(?:ai|com)|api\\.x\\.ai|api\\.fireworks\\.ai|api\\.replicate\\.com|api-inference\\.huggingface\\.co)"
         ]
       },
       "events": ["pre_tool_use"],

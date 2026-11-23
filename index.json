@@ -373,9 +373,9 @@
       "id": "ai-risk-governance",
       "name": "AI Risk Governance",
       "category": "system",
-      "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage, public AI APIs and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
-      "version": "1.1.0",
-      "rule_count": 21
+      "description": "Agent-side controls for an AI risk governance framework: keeps AI coding agents inside their permission checks, protects endpoint security settings, gates new MCP servers, AI extensions, local models and untrusted package sources, stops data leaving through paste sites, personal cloud storage and public repositories, asks for a reason on new sign-ins, outbound MCP messages and access grants, records changes to agent settings and persistent memory, and flags paid AI cloud capacity and long-lived keys. Nothing is hard-blocked. Pair it with Secrets Baseline for credential detection.",
+      "version": "1.2.0",
+      "rule_count": 20
     }
   ]
 }
